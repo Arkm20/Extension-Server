@@ -5,7 +5,7 @@
     "author": "Animex",
     "description": "Fetches streaming URLs and direct download links from 9anime. Supports both streaming and downloading.",
     "type": [
-        "ANIME_STREAMING",
+        "ANIME_STREAMER",
         "ANIME_DOWNLOADING"
     ],
     "requirements": ["httpx", "beautifulsoup4"]
