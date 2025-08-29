@@ -19,4 +19,4 @@ EXPOSE 7275
 
 # Define the command to run your app
 # We use the PORT environment variable provided by Koyeb, defaulting to 7275
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "${PORT:-7275}"]
+CMD uvicorn app:app --host 0.0.0.0 --port ${PORT:-7275}
