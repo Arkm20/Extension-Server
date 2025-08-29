@@ -7,7 +7,7 @@ import uvicorn
 import time
 import asyncio
 import uuid
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 from contextlib import asynccontextmanager
 import re
 import shutil
@@ -1103,6 +1103,48 @@ async def download_manga_chapter_as_pdf(source: str, manga_id: str, chapter_id: 
     filename = f"{safe_title} - Chapter {chapter_num_str}.pdf"
     return Response(content=bytes(pdf_output), media_type="application/pdf", headers={"Content-Disposition": f"attachment; filename=\"{filename}\""})
 
+@app.get("/proxy/browse", response_class=HTMLResponse)
+async def proxy_browse(url: str):
+    if not url:
+        raise HTTPException(status_code=400, detail="URL parameter is required.")
+    
+    try:
+        parsed_url = urlparse(url)
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+            "Referer": base_url
+        }
+        
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, headers=headers, follow_redirects=True)
+            resp.raise_for_status()
+            
+            content_type = resp.headers.get('content-type', '')
+            if 'text/html' in content_type:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                
+                # Rewrite links and sources to go through the proxy
+                for tag in soup.find_all(href=True):
+                    tag['href'] = f"/proxy/browse?url={urljoin(base_url, tag['href'])}"
+                for tag in soup.find_all(src=True):
+                    tag['src'] = f"/proxy/browse?url={urljoin(base_url, tag['src'])}"
+                
+                base = soup.find('base')
+                if not base:
+                    base = soup.new_tag('base', href=base_url)
+                    if soup.head:
+                        soup.head.insert(0, base)
+                return HTMLResponse(content=str(soup))
+            else:
+                return Response(content=resp.content, media_type=content_type)
+
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=f"Upstream error: {e.response.text}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred while proxying: {str(e)}")
+
 @app.get("/proxy/iframe", response_class=HTMLResponse)
 async def proxy_iframe(url: str):
     if not url:
@@ -1248,6 +1290,7 @@ async def proxy_to_extension(ext_name: str, path: str, request: Request):
             raise HTTPException(status_code=500, detail=f"An unexpected error occurred during proxying: {e}")
 
 # --- Static Files Hosting ---
+app.mount("/proxy", StaticFiles(directory="proxy", html=True), name="proxy")
 app.mount("/data", StaticFiles(directory="data"), name="data")
 app.mount("/", StaticFiles(directory="animex", html=True), name="static_site")
 print("Static files mounted at /data and /")

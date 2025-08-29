@@ -357,22 +357,10 @@
               ></label>
             </div>
           </div>
-          <div class="settings-item" id="nsfw-toggle-container">
-            <i class="item-icon fas fa-mask"></i
-            ><span class="item-text">NSFW Content</span>
-            <div class="item-action">
-              <label class="toggle-switch"
-                ><input type="checkbox" id="nsfwToggle" /><span
-                  class="slider"
-                ></span
-              ></label>
-            </div>
-          </div>
-          <!-- NSFW Portal Link - Hidden by default -->
-          <div class="settings-item" id="nsfwPortalItem" style="display: none;">
-            <i class="item-icon fas fa-door-open" style="color: var(--destructive);"></i
-            ><span class="item-text" style="color: var(--destructive);">NSFW Portal</span
-            ><i class="item-action fas fa-chevron-right" style="color: var(--destructive);"></i>
+          <div class="settings-item" id="launchHorizon">
+            <i class="item-icon fas fa-rocket"></i>
+            <span class="item-text">Launch!</span>
+            <i class="item-action fas fa-chevron-right"></i>
           </div>
         </div>
 
@@ -626,8 +614,6 @@
         const extensionServerModal = document.getElementById(
           "extensionServerModal"
         );
-        const nsfwPortalItem = document.getElementById("nsfwPortalItem");
-
 
         async function initialize() {
           console.log("Initializing settings page...");
@@ -656,7 +642,6 @@
 
             renderSettingsForProfile();
             setupEventListeners();
-            await checkAndSetupNsfwToggle();
 
             loadingScreen.style.display = "none";
             settingsContainer.style.display = "block";
@@ -666,36 +651,6 @@
             localStorage.removeItem("currentProfileId");
             window.location.href = "login.html";
           }
-        }
-
-        async function checkAndSetupNsfwToggle() {
-            const nsfwToggleContainer = document.getElementById('nsfw-toggle-container');
-            const nsfwPortalItem = document.getElementById('nsfwPortalItem');
-
-            if (!nsfwToggleContainer) return;
-
-            // The container is hidden by default in HTML to prevent flicker.
-            if (nsfwPortalItem) nsfwPortalItem.style.display = 'none';
-
-            try {
-                const response = await fetch("/extensions");
-                if (!response.ok) throw new Error("Failed to fetch extensions");
-                const installedExtensions = await response.json();
-
-                const nsfwExtensionExists = installedExtensions.includes('nsfw');
-
-                if (nsfwExtensionExists) {
-                    nsfwToggleContainer.style.display = 'flex';
-                    // The portal item's visibility is controlled by the toggle's state,
-                    // which is set in renderSettingsForProfile. We just need to re-evaluate.
-                    if (document.getElementById('nsfwToggle').checked) {
-                       if (nsfwPortalItem) nsfwPortalItem.style.display = 'flex';
-                    }
-                }
-            } catch (error) {
-                console.error("Could not check for NSFW extension, hiding setting as a precaution:", error);
-                // They are already hidden, so no action needed on error.
-            }
         }
 
         function renderSettingsForProfile() {
@@ -711,11 +666,6 @@
           document.getElementById("pushNotificationsToggle").checked =
             settings.pushNotifications;
           
-          const nsfwToggle = document.getElementById("nsfwToggle");
-          nsfwToggle.checked = settings.nsfw_enabled;
-          // Show/hide the portal link based on the setting
-          nsfwPortalItem.style.display = settings.nsfw_enabled ? "flex" : "none";
-
           updateDropdownSelection(settings.downloadQuality);
         }
 
@@ -772,11 +722,11 @@
           switchProfileItem.addEventListener("click", () => {
             window.parent.postMessage({ action: "switchProfile" }, "*");
           });
-          
-          nsfwPortalItem.addEventListener("click", () => {
-              window.parent.openPopup('portal.html');
-          });
 
+          document.getElementById('launchHorizon').addEventListener('click', () => {
+              window.open('/proxy/', '_blank');
+          });
+          
           document
             .getElementById("themeToggle")
             .addEventListener("change", (e) => {
@@ -787,15 +737,6 @@
             .getElementById("pushNotificationsToggle")
             .addEventListener("change", (e) => {
               updateSetting("pushNotifications", e.target.checked);
-            });
-
-          document
-            .getElementById("nsfwToggle")
-            .addEventListener("change", (e) => {
-              const isEnabled = e.target.checked;
-              updateSetting("nsfw_enabled", isEnabled);
-              // Instantly show/hide the portal link
-              nsfwPortalItem.style.display = isEnabled ? "flex" : "none";
             });
 
           setupCustomDropdown();
