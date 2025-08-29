@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Episode Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent-color: #FF9500;
+      --background-color: #0A0A0A;
+      --surface-color: #141414;
+      --text-primary: #FFFFFF;
+      --text-secondary: #A0A0A0;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --indicator-left: 4px;
+      --indicator-width: 0px;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background: var(--background-color);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: contain;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* --- Loading Screen --- */
+    #loading-container {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 200; background-color: #000; background-size: cover;
+      background-position: center; display: flex; align-items: flex-end;
+      justify-content: center; transition: opacity 0.3s ease;
+    }
+    #loading-container::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%;
+      height: 100%; background: linear-gradient(to top, rgba(0,0,0,1) 20%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
+    }
+    #loading-info {
+      position: relative; text-align: left; padding: 1.5rem 1.5rem 3rem;
+      max-width: 90%; max-height: 50%; overflow-y: auto; box-sizing: border-box;
+    }
+    #loading-info h2 { margin: 0 0 0.5rem 0; font-size: 1.5rem; }
+    #loading-info p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+    .loader-spinner {
+      border: 4px solid rgba(255, 255, 255, 0.2); border-radius: 50%;
+      border-top: 4px solid var(--accent-color); width: 40px; height: 40px;
+      animation: spin 1s linear infinite; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+    /* --- Player & Content --- */
+    #player-container {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      flex-shrink: 0;
+      position: relative;
+    }
+    #player-container iframe {
+      width: 100%; height: 100%; border: none; background: #111;
+    }
+    #error-message {
+      color: #ff6b6b; text-align: center; padding: 2rem 1rem; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center; height: 100%;
+    }
+
+    #content-container {
+      flex-grow: 1;
+      padding: 1rem 1.2rem;
+      background: var(--background-color);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* --- Header Info --- */
+    #header-info {
+      text-align: left;
+    }
+    #series-title { font-size: 1.3rem; font-weight: 700; line-height: 1.3; }
+    #meta-line { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+    /* --- Controls --- */
+    #controls-main {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.8rem;
+      align-items: center;
+    }
+    #source-controls {
+      display: flex;
+      background-color: var(--surface-color);
+      border-radius: 12px;
+      padding: 5px;
+      border: 1px solid var(--border-color);
+      gap: 5px;
+    }
+
+    /* SUB/DUB Toggle */
+    .subdub-toggle {
+      position: relative; display: flex;
+      list-style: none; margin: 0; padding: 0;
+      flex-grow: 1;
+    }
+    .subdub-toggle::before {
+      content: ''; position: absolute; top: 0; left: var(--indicator-left);
+      width: var(--indicator-width); height: 100%;
+      background: var(--accent-color);
+      border-radius: 8px;
+      z-index: 1;
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    .subdub-btn {
+      position: relative; /* Ensure z-index stacking context */
+      background: none; border: none; color: var(--text-secondary);
+      font-size: 0.9em; font-weight: 600;
+      padding: 8px 16px; /* Add horizontal padding for spacing */
+      border-radius: 8px; cursor: pointer;
+      outline: none; z-index: 2; transition: color 0.3s ease;
+      flex-grow: 1; text-align: center;
+    }
+    .subdub-btn.active { color: var(--text-primary); }
+
+    /* Source Selector */
+    .source-selector-wrapper {
+      position: relative;
+      flex-grow: 1;
+    }
+    #source-changer-select {
+      width: 100%;
+      background-color: transparent;
+      color: var(--text-primary);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 28px 8px 12px;
+      font-size: 0.9em;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+      text-align: center;
+      text-align-last: center; /* For Firefox */
+    }
+    .source-selector-wrapper::after {
+      content: '';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--text-secondary);
+      pointer-events: none;
+    }
+    #source-changer-select:focus { outline: none; }
+
+    /* Next Episode Button */
+    #next-episode-btn {
+      display: block; background: var(--accent-color); color: #fff;
+      font-weight: 600; font-size: 0.95em; border: none; border-radius: 12px;
+      padding: 12px 20px; cursor: pointer; transition: background 0.2s;
+      white-space: nowrap;
+    }
+    #next-episode-btn:hover { background: #e6850a; }
+    #series-over-msg {
+      text-align: center; font-weight: 600; font-size: 0.95em;
+      color: var(--accent-color); opacity: 0.8; padding: 12px 0;
+    }
+
+    /* Synopsis */
+    #synopsis-container {
+      margin-top: 0.5rem;
+    }
+    #synopsis-container h4 {
+      margin: 0 0 0.5rem 0; font-weight: 600; opacity: 0.9;
+    }
+    #synopsis-container p {
+      font-size: 0.9em; line-height: 1.6; color: var(--text-secondary); margin: 0;
+    }
+
+    /* --- Landscape Mode --- */
+    @media (orientation: landscape) and (max-height: 600px) {
+      body { flex-direction: row; }
+      #player-container {
+        width: 100vw; height: 100vh;
+        position: fixed; top: 0; left: 0; z-index: 100;
+      }
+      #content-container {
+        display: none; /* Hide by default in landscape */
+      }
+      /* Add specific landscape controls if needed, or rely on player's native controls */
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading-container">
+    <div class="loader-spinner"></div>
+    <div id="loading-info">
+      <h2 id="loading-title">—</h2>
+      <p id="loading-synopsis">—</p>
+    </div>
+  </div>
+
+  <div id="player-container"></div>
+
+  <div id="content-container">
+    <div id="header-info">
+      <div id="series-title">—</div>
+      <div id="meta-line">
+        <span>Type: <span id="series-type">—</span></span> |
+        <span>Year: <span id="series-year">—</span></span> |
+        <span>Episode: <span id="episode-number">—</span></span>
+      </div>
+    </div>
+
+    <div id="controls-main">
+      <div id="source-controls">
+        <ul class="subdub-toggle" id="subdub-toggle">
+          <li><button class="subdub-btn active" id="sub-option-btn" type="button">SUB</button></li>
+          <li><button class="subdub-btn" id="dub-option-btn" type="button">DUB</button></li>
+        </ul>
+        <div class="source-selector-wrapper">
+          <select id="source-changer-select" name="source-changer"></select>
+        </div>
+      </div>
+      <div id="next-episode-container"></div>
+    </div>
+
+    <div id="synopsis-container">
+      <h4>Synopsis</h4>
+      <p id="synopsis-text">—</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const jikanId = params.get('id');
+      const episode = params.get('ep');
+
+      // DOM Elements
+      const playerContainer = document.getElementById('player-container');
+      const loadingContainer = document.getElementById('loading-container');
+      const subOptionBtn = document.getElementById('sub-option-btn');
+      const dubOptionBtn = document.getElementById('dub-option-btn');
+      const sourceChangerSelect = document.getElementById('source-changer-select');
+      const nextEpisodeContainer = document.getElementById('next-episode-container');
+      const synopsisText = document.getElementById('synopsis-text');
+
+      // App State
+      const isDeployed = window.location.protocol.startsWith('http');
+      const serverIp = localStorage.getItem('extension_server_ip');
+      const serverUrl = isDeployed ? '' : `http://${serverIp || 'localhost'}:7275`;
+      const profileId = localStorage.getItem("currentProfileId");
+      let currentProfile = null;
+      let userPref = localStorage.getItem('animeDubPref') || 'sub';
+      let currentModule = 'default';
+
+      // --- Main Initialization ---
+      try {
+        // Initial Checks
+        if (!jikanId || !episode) {
+          throw new Error('Missing "id" or "ep" parameter.');
+        }
+        if (!isDeployed && !serverIp) {
+          throw new Error('Extension server IP not set. Please configure it.');
+        }
+
+        loadingContainer.style.display = 'flex';
+
+        await fetchProfile();
+        const animeData = await fetchAnimeData();
+        updateUI(animeData);
+        await logWatchHistory(jikanId, episode, animeData.title);
+        await populateSourceChanger();
+
+        if (userPref === 'dub') {
+          dubOptionBtn.classList.add('active');
+          subOptionBtn.classList.remove('active');
+        } else {
+          subOptionBtn.classList.add('active');
+          dubOptionBtn.classList.remove('active');
+        }
+
+        await loadIframe(userPref === 'dub', currentModule);
+        setupEventListeners();
+        setTimeout(moveActiveIndicator, 150);
+
+      } catch (error) {
+        console.error("A critical error occurred during initialization:", error);
+        loadingContainer.style.display = 'none';
+        playerContainer.innerHTML = `<div id="error-message">Failed to load player: ${error.message}</div>`;
+      }
+
+
+      // --- Functions ---
+
+      async function fetchProfile() {
+        if (!profileId) return;
+        try {
+          const response = await fetch(`/profiles/${profileId}`);
+          if (response.ok) currentProfile = await response.json();
+          else console.warn("Could not load active profile.");
+        } catch (e) {
+          console.error("Error fetching profile:", e);
+        }
+      }
+
+      async function logWatchHistory(malId, episodeNumber, seriesTitle) {
+        if (!currentProfile || !seriesTitle || seriesTitle === 'Unknown') return;
+        const query = new URLSearchParams({
+          mal_id: malId,
+          episode_number: episodeNumber,
+          series_title: seriesTitle,
+          season_number: 1,
+        });
+        try {
+          await fetch(`/profiles/${currentProfile.id}/watch-history?${query.toString()}`, { method: 'POST' });
+          console.log(`Logged watch history for Ep. ${episodeNumber}.`);
+        } catch (error) {
+          console.error("Failed to log watch history:", error);
+        }
+      }
+
+      function moveActiveIndicator() {
+        const activeButton = document.querySelector('.subdub-btn.active');
+        if (activeButton) {
+          const indicator = document.querySelector('.subdub-toggle');
+          const listRect = indicator.getBoundingClientRect();
+          const buttonRect = activeButton.getBoundingClientRect();
+          const leftPosition = buttonRect.left - listRect.left;
+          indicator.style.setProperty('--indicator-left', `${leftPosition}px`);
+          indicator.style.setProperty('--indicator-width', `${activeButton.offsetWidth}px`);
+        }
+      }
+
+      async function fetchAnimeData() {
+        let title = 'Unknown', type = 'N/A', year = 'N/A', totalEpisodes = null, synopsis = 'No synopsis available.';
+        let episodeSynopsis = 'No episode synopsis available.', episodeThumbnail = null;
+
+        try {
+          const [jikanInfoResp, jikanEpisodesResp, kitsuMapResp] = await Promise.all([
+            fetch(`https://api.jikan.moe/v4/anime/${jikanId}`),
+            fetch(`https://api.jikan.moe/v4/anime/${jikanId}/episodes`),
+            fetch(`${serverUrl}/map/mal/${jikanId}`)
+          ]);
+
+          if (jikanInfoResp.ok) {
+            const data = (await jikanInfoResp.json()).data || {};
+            title = data.title_english || data.title || 'Unknown';
+            type = data.type || 'N/A';
+            year = data.year || data.aired?.prop?.from?.year || 'N/A';
+          }
+
+          if (jikanEpisodesResp.ok) {
+            const data = await jikanEpisodesResp.json();
+            totalEpisodes = data.pagination?.last_visible_page > 1 ? null : data.data?.length;
+          }
+
+          if (kitsuMapResp.ok) {
+            const mapData = await kitsuMapResp.json();
+            const kitsuId = mapData.kitsu_id;
+            const [kitsuAnimeResp, kitsuEpisodeResp] = await Promise.all([
+              fetch(`https://kitsu.io/api/edge/anime/${kitsuId}`),
+              fetch(`https://kitsu.io/api/edge/anime/${kitsuId}/episodes?filter[number]=${episode}`)
+            ]);
+            if (kitsuAnimeResp.ok) {
+              const kitsuData = await kitsuAnimeResp.json();
+              if (kitsuData && kitsuData.data && kitsuData.data.attributes) {
+                  const attributes = kitsuData.data.attributes;
+                  synopsis = attributes.synopsis || synopsis;
+                  if (attributes.posterImage?.original) {
+                      loadingContainer.style.backgroundImage = `url(${attributes.posterImage.original})`;
+                  }
+              }
+            }
+            if (kitsuEpisodeResp.ok) {
+              const episodeData = await kitsuEpisodeResp.json();
+              if (episodeData.data?.length > 0 && episodeData.data[0].attributes) {
+                const episodeAttributes = episodeData.data[0].attributes;
+                episodeSynopsis = episodeAttributes.synopsis || episodeAttributes.description || episodeSynopsis;
+                episodeThumbnail = episodeAttributes.thumbnail?.original;
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to fetch some anime data:', err);
+          // Return default data, but the main try/catch will handle the UI
+        }
+
+        return { title, type, year, totalEpisodes, synopsis, episodeSynopsis, episodeThumbnail };
+      }
+
+      async function populateSourceChanger() {
+        try {
+          const response = await fetch(`${serverUrl}/modules/streaming`);
+          if (!response.ok) throw new Error('Failed to fetch streaming modules');
+          const modules = await response.json();
+
+          sourceChangerSelect.innerHTML = '';
+          const defaultOption = document.createElement('option');
+          defaultOption.textContent = 'Default Source';
+          defaultOption.value = 'default';
+          sourceChangerSelect.appendChild(defaultOption);
+
+          if (modules.length > 0) {
+            modules.forEach(module => {
+              const option = document.createElement('option');
+              option.value = module.id;
+              option.textContent = module.name;
+              sourceChangerSelect.appendChild(option);
+            });
+          }
+        } catch (error) {
+          console.error('Could not populate source changer:', error);
+          const errorOption = document.createElement('option');
+          errorOption.textContent = 'Error loading';
+          errorOption.value = 'default';
+          errorOption.disabled = true;
+          sourceChangerSelect.innerHTML = '';
+          sourceChangerSelect.appendChild(errorOption);
+        }
+      }
+
+      function updateUI(data) {
+        const safeData = data || {};
+        document.getElementById('series-title').textContent = safeData.title || '—';
+        document.getElementById('series-type').textContent = safeData.type || 'N/A';
+        document.getElementById('series-year').textContent = safeData.year || 'N/A';
+        document.getElementById('episode-number').textContent = episode || 'N/A';
+        synopsisText.textContent = safeData.episodeSynopsis || 'No synopsis available.';
+        document.getElementById('loading-title').textContent = safeData.title || 'Loading...';
+        document.getElementById('loading-synopsis').textContent = safeData.episodeSynopsis || '';
+
+        if (safeData.episodeThumbnail) {
+          loadingContainer.style.backgroundImage = `url(${safeData.episodeThumbnail})`;
+        }
+
+        const currentEpNum = parseInt(episode, 10);
+        nextEpisodeContainer.innerHTML = ''; // Clear previous button/message
+        if (safeData.totalEpisodes && currentEpNum < safeData.totalEpisodes) {
+          const nextEpBtn = document.createElement('button');
+          nextEpBtn.id = 'next-episode-btn';
+          nextEpBtn.textContent = `Next →`;
+          nextEpBtn.addEventListener('click', () => {
+            params.set('ep', currentEpNum + 1);
+            window.location.search = params.toString();
+          });
+          nextEpisodeContainer.appendChild(nextEpBtn);
+        } else if (safeData.totalEpisodes && currentEpNum >= safeData.totalEpisodes) {
+          const seriesOverMsg = document.createElement('div');
+          seriesOverMsg.id = 'series-over-msg';
+          seriesOverMsg.textContent = 'Series Complete';
+          nextEpisodeContainer.appendChild(seriesOverMsg);
+        }
+      }
+
+      async function loadIframe(dub, preferModule = 'default') {
+        playerContainer.innerHTML = '';
+        // Don't show loading screen again if it's already visible
+        if (loadingContainer.style.display !== 'flex') {
+            loadingContainer.style.display = 'flex';
+        }
+
+        let iframeSrcURL = `${serverUrl}/iframe-src?mal_id=${jikanId}&episode=${episode}&dub=${dub}`;
+        if (preferModule && preferModule !== 'default') {
+          iframeSrcURL += `&prefer_module=${encodeURIComponent(preferModule)}`;
+        }
+
+        try {
+          const res = await fetch(iframeSrcURL);
+          if (!res.ok) throw new Error(`Proxy error ${res.status}`);
+          const json = await res.json();
+          if (!json.src) throw new Error('No embed source found from any module');
+
+          if (json.source_module) {
+            sourceChangerSelect.value = json.source_module;
+            currentModule = json.source_module;
+          }
+
+          const iframe = document.createElement('iframe');
+          iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-fullscreen');
+          const proxiedSrc = `${serverUrl}/proxy/iframe?url=${encodeURIComponent(json.src)}`;
+          iframe.setAttribute('src', proxiedSrc);
+          iframe.setAttribute('allowfullscreen', 'true');
+          iframe.setAttribute('scrolling', 'no');
+          playerContainer.appendChild(iframe);
+
+          // Hide the loading screen as soon as the iframe is added to the DOM.
+          // The iframe itself will show its own loading progress.
+          loadingContainer.style.display = 'none';
+        } catch (err) {
+          console.error('Error loading player:', err);
+          loadingContainer.style.display = 'none';
+          playerContainer.innerHTML = `<div id="error-message">Could not load player: ${err.message}. Please try another source or type.</div>`;
+        }
+      }
+
+      function setupEventListeners() {
+        subOptionBtn.addEventListener('click', async () => {
+          if (userPref !== 'sub') {
+            userPref = 'sub';
+            localStorage.setItem('animeDubPref', 'sub');
+            subOptionBtn.classList.add('active');
+            dubOptionBtn.classList.remove('active');
+            moveActiveIndicator();
+            await loadIframe(false, currentModule);
+          }
+        });
+        dubOptionBtn.addEventListener('click', async () => {
+          if (userPref !== 'dub') {
+            userPref = 'dub';
+            localStorage.setItem('animeDubPref', 'dub');
+            dubOptionBtn.classList.add('active');
+            subOptionBtn.classList.remove('active');
+            moveActiveIndicator();
+            await loadIframe(true, currentModule);
+          }
+        });
+        sourceChangerSelect.addEventListener('change', async () => {
+          const selectedModule = sourceChangerSelect.value;
+          if (selectedModule !== currentModule) {
+            currentModule = selectedModule;
+            await loadIframe(userPref === 'dub', currentModule);
+          }
+        });
+        window.addEventListener('resize', () => setTimeout(moveActiveIndicator, 100));
+      }
+    });
+  </script>
+</body>
+</html>

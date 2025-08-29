@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Lists</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      :root {
+        --bg-color: #18181b;
+        --surface-color: #27272a;
+        --border-color: rgba(255, 255, 255, 0.1);
+        --text-primary: #f4f4f5;
+        --text-secondary: #a1a1aa;
+        --accent-color: #ff9500;
+        --accent-hover: #ffac33;
+        --danger-color: #ef4444;
+        --font-family: "Inter", sans-serif;
+        --radius: 8px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-family);
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        height: 100%;
+        overflow: hidden;
+      }
+      .manager-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 16px;
+      }
+      .manager-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-shrink: 0;
+      }
+      .manager-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      .close-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .close-btn:hover {
+        color: var(--text-primary);
+      }
+      .item-info {
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        padding: 12px;
+        border-radius: var(--radius);
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+      }
+      .item-info strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      .lists-body {
+        flex-grow: 1;
+        overflow-y: auto;
+        margin-bottom: 16px;
+      }
+      .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+      }
+      .list-item:hover {
+        background-color: #3f3f46;
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+      .list-item.in-list {
+        border-color: var(--accent-color);
+        background-color: rgba(255, 149, 0, 0.1);
+      }
+      .list-item.in-list .list-name::after {
+        content: " (Saved)";
+        color: var(--accent-color);
+        font-size: 0.8rem;
+      }
+      .list-name {
+        font-weight: 500;
+      }
+      .delete-list-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s;
+      }
+      .delete-list-btn:hover {
+        color: var(--danger-color);
+      }
+      .manager-footer {
+        flex-shrink: 0;
+      }
+      .new-list-form {
+        display: flex;
+        gap: 8px;
+      }
+      .new-list-input {
+        flex-grow: 1;
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 12px;
+        font-size: 1rem;
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .new-list-input:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.3);
+      }
+      .add-list-btn {
+        background-color: var(--accent-color);
+        border: none;
+        color: #000;
+        padding: 0 20px;
+        font-weight: 600;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .add-list-btn:hover {
+        background-color: var(--accent-hover);
+      }
+      .placeholder {
+        text-align: center;
+        color: var(--text-secondary);
+        padding: 32px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="manager-container">
+      <header class="manager-header">
+        <h1 class="manager-title">Add to List</h1>
+        <button class="close-btn" id="close-btn" title="Close">&times;</button>
+      </header>
+
+      <div class="item-info" id="item-info">
+        Select a list to save the item to.
+      </div>
+
+      <div class="lists-body" id="lists-container">
+        <!-- List items will be generated here -->
+        <div class="placeholder" id="lists-placeholder">
+          Create your first list below.
+        </div>
+      </div>
+
+      <footer class="manager-footer">
+        <form id="new-list-form" class="new-list-form">
+          <input
+            type="text"
+            id="new-list-input"
+            class="new-list-input"
+            placeholder="Create a new list..."
+            required
+          />
+          <button type="submit" class="add-list-btn">Create</button>
+        </form>
+      </footer>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const itemInfoEl = document.getElementById("item-info");
+        const listsContainer = document.getElementById("lists-container");
+        const listsPlaceholder = document.getElementById("lists-placeholder");
+        const newListForm = document.getElementById("new-list-form");
+        const newListInput = document.getElementById("new-list-input");
+        const closeBtn = document.getElementById("close-btn");
+
+        let currentItem = null;
+        let userLists = {};
+        const LISTS_STORAGE_KEY = "animex_lists_v1";
+
+        // --- DATA & STORAGE ---
+        function loadLists() {
+          try {
+            const storedLists = localStorage.getItem(LISTS_STORAGE_KEY);
+            userLists = storedLists ? JSON.parse(storedLists) : {};
+          } catch (e) {
+            console.error("Failed to parse user lists from localStorage", e);
+            userLists = {};
+          }
+        }
+
+        function saveLists() {
+          try {
+            localStorage.setItem(LISTS_STORAGE_KEY, JSON.stringify(userLists));
+          } catch (e) {
+            console.error("Failed to save user lists to localStorage", e);
+          }
+        }
+
+        // --- UI RENDERING ---
+        function renderLists() {
+          listsContainer.innerHTML = "";
+          const listNames = Object.keys(userLists);
+
+          if (listNames.length === 0) {
+            listsContainer.appendChild(listsPlaceholder);
+            listsPlaceholder.style.display = "block";
+            return;
+          }
+
+          listsPlaceholder.style.display = "none";
+
+          listNames
+            .sort((a, b) => a.localeCompare(b))
+            .forEach((listName) => {
+              const listItem = document.createElement("div");
+              listItem.className = "list-item";
+              listItem.dataset.listName = listName;
+
+              const nameSpan = document.createElement("span");
+              nameSpan.className = "list-name";
+              nameSpan.textContent = listName;
+
+              const deleteBtn = document.createElement("button");
+              deleteBtn.className = "delete-list-btn";
+              deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+              deleteBtn.title = `Delete "${listName}" list`;
+
+              listItem.appendChild(nameSpan);
+              listItem.appendChild(deleteBtn);
+              listsContainer.appendChild(listItem);
+            });
+
+          updateListSelection();
+        }
+
+        function updateItemInfo() {
+          if (!currentItem) {
+            itemInfoEl.innerHTML = "Select a list to save the item to.";
+            return;
+          }
+          const itemType =
+            currentItem.type === "anime" ? "Episode(s)" : "Chapter(s)";
+          const itemsDisplay =
+            currentItem.items.length > 3
+              ? `${currentItem.items.slice(0, 3).join(", ")}...`
+              : currentItem.items.join(", ");
+
+          itemInfoEl.innerHTML = `Saving <strong>${currentItem.title}</strong> - ${itemType}: <strong>${itemsDisplay}</strong>`;
+        }
+
+        function updateListSelection() {
+          if (!currentItem) return;
+
+          document.querySelectorAll(".list-item").forEach((el) => {
+            const listName = el.dataset.listName;
+            const list = userLists[listName];
+
+            // Check if the series is in the list
+            const seriesEntry = list.find(
+              (entry) => entry[0] === currentItem.id
+            );
+            if (seriesEntry) {
+              el.classList.add("in-list");
+            } else {
+              el.classList.remove("in-list");
+            }
+          });
+        }
+
+        // --- LOGIC ---
+        function createList(listName) {
+          if (!listName || userLists.hasOwnProperty(listName)) {
+            window.parent.showToast("List name already exists or is invalid.");
+            return;
+          }
+          userLists[listName] = [];
+          saveLists();
+          renderLists();
+        }
+
+        function deleteList(listName) {
+          if (
+            !userLists.hasOwnProperty(listName) ||
+            !confirm(`Are you sure you want to delete the "${listName}" list?`)
+          ) {
+            return;
+          }
+          delete userLists[listName];
+          saveLists();
+          renderLists();
+        }
+
+        function toggleItemInList(listName) {
+          if (!currentItem) return;
+
+          const list = userLists[listName];
+          let seriesEntry = list.find((entry) => entry[0] === currentItem.id);
+
+          if (seriesEntry) {
+            // Series exists, so remove it entirely for simplicity
+            userLists[listName] = list.filter(
+              (entry) => entry[0] !== currentItem.id
+            );
+          } else {
+            // Series doesn't exist, add it
+            const newEntry = [currentItem.id, currentItem.items.join(",")];
+            list.push(newEntry);
+          }
+
+          saveLists();
+          updateListSelection();
+        }
+
+        // --- EVENT LISTENERS ---
+        window.addEventListener("message", (event) => {
+          if (event.data && event.data.type === "manage-item") {
+            currentItem = event.data.data;
+            console.log("Received item to manage:", currentItem);
+            updateItemInfo();
+            updateListSelection();
+          }
+        });
+
+        closeBtn.addEventListener("click", () => {
+          window.parent.postMessage("close-list-manager", "*");
+        });
+
+        newListForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const listName = newListInput.value.trim();
+          createList(listName);
+          newListInput.value = "";
+        });
+
+        listsContainer.addEventListener("click", (e) => {
+          const listItem = e.target.closest(".list-item");
+          if (!listItem) return;
+
+          const listName = listItem.dataset.listName;
+
+          if (e.target.closest(".delete-list-btn")) {
+            deleteList(listName);
+          } else {
+            toggleItemInList(listName);
+          }
+        });
+
+        // --- INITIALIZATION ---
+        function init() {
+          loadLists();
+          renderLists();
+        }
+
+        init();
+      });
+    </script>
+  </body>
+</html>

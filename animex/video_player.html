@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Custom Video Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --player-accent-color: #FF9500; /* Orange theme */
+            --player-controls-bg: rgba(0, 0, 0, 0.7);
+            --player-text-color: #FFFFFF;
+            --player-icon-size: 1.2em;
+            --player-mobile-icon-size: 1.5em;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color: #141414;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-player-container {
+            width: 90vw;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background-color: #000;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .video-player-container.fullscreen-mode, /* For full=true parameter */
+        .video-player-container.fullscreen      /* For user-initiated fullscreen */
+        {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+            top: 0 !important;
+            left: 0 !important;
+            border-radius: 0 !important;
+            z-index: 2147483647;
+            position: fixed;
+        }
+
+        video#customPlayer {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0) 100%);
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 21;
+        }
+
+        .video-player-container:not(.controls-active) .video-controls {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .video-player-container.paused .video-controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 5px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            position: relative;
+        }
+        .progress-bar-hover {
+            position: absolute;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 3px;
+            pointer-events: none;
+        }
+        .progress-filled {
+            height: 100%;
+            background-color: var(--player-accent-color);
+            border-radius: 3px;
+            width: 0%;
+            position: relative;
+        }
+        .progress-filled::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background-color: var(--player-accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .video-player-container.controls-active .progress-filled::after {
+            opacity: 1;
+        }
+
+        .controls-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controls-left, .controls-center, .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .controls-center {
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .control-button {
+            background: none;
+            border: none;
+            color: var(--player-text-color);
+            font-size: var(--player-icon-size);
+            cursor: pointer;
+            padding: 8px;
+            line-height: 1;
+        }
+        .control-button:hover {
+            color: var(--player-accent-color);
+        }
+
+        .time-display {
+            color: var(--player-text-color);
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+        }
+        .volume-slider {
+            width: 70px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            cursor: pointer;
+            margin-left: 8px;
+            display: none;
+        }
+        .volume-level {
+            height: 100%;
+            background-color: var(--player-accent-color);
+            border-radius: 2px;
+            width: 100%;
+        }
+        .video-player-container.desktop .volume-slider {
+            display: block;
+        }
+
+        .big-play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: var(--player-text-color);
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 1.5em;
+            height: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+        .big-play-button:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .video-player-container.playing .big-play-button,
+        .video-player-container.has-interacted .big-play-button {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* UPDATED: Loading/Processing Spinner container */
+        .loading-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 19;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.2);
+            border-top-color: var(--player-accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            color: var(--player-text-color);
+            font-size: 1em;
+        }
+        
+        .video-player-container.loading .loading-container,
+        .video-player-container.processing .loading-container {
+            display: flex;
+        }
+        .video-player-container.loading .big-play-button,
+        .video-player-container.processing .big-play-button {
+            display: none;
+        }
+
+
+        /* Overlay for double tap seeking */
+        .seek-overlay {
+            position: absolute;
+            top: 0;
+            width: 35%; /* Area for tap */
+            height: calc(100% - 60px); /* Avoid controls area */
+            z-index: 10; /* Above video, below controls */
+        }
+        .seek-overlay.left { left: 0; }
+        .seek-overlay.right { right: 0; }
+
+        /* Feedback for double-tap seek */
+        .seek-feedback {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            color: var(--player-text-color);
+            background-color: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 22; /* Above controls */
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            pointer-events: none; /* Don't interfere with other clicks */
+        }
+        .seek-feedback.left { left: 20%; }
+        .seek-feedback.right { right: 20%; }
+        .seek-feedback.show { opacity: 1; }
+
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .control-button {
+                font-size: var(--player-mobile-icon-size);
+                padding: 10px;
+            }
+            .controls-left .time-display { display: none; }
+            .controls-right .time-display { font-size: 0.9em; }
+            .volume-container { margin-right: 5px; }
+            .volume-slider { display: none; }
+            .big-play-button { font-size: 3em; }
+            .controls-left, .controls-center, .controls-right { gap: 5px; }
+            .seek-feedback { font-size: 1.5em; padding: 8px 15px;}
+            .seek-feedback.left { left: 10%; }
+            .seek-feedback.right { right: 10%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="video-player-container" id="videoPlayerContainer">
+        <!-- UPDATED: Loading container -->
+        <div class="loading-container" id="loadingContainer">
+            <div class="spinner"></div>
+            <p class="loading-text" id="loadingText"></p>
+        </div>
+
+        <video id="customPlayer" playsinline preload="metadata"></video>
+
+        <div class="seek-overlay left" id="seekOverlayLeft"></div>
+        <div class="seek-overlay right" id="seekOverlayRight"></div>
+
+        <div class="seek-feedback left" id="seekFeedbackRewind"><i class="fas fa-undo-alt"></i> -10s</div>
+        <div class="seek-feedback right" id="seekFeedbackForward"><i class="fas fa-redo-alt"></i> +10s</div>
+
+        <div class="big-play-button" id="bigPlayBtn"><i class="fas fa-play"></i></div>
+
+        <div class="video-controls" id="videoControls">
+            <div class="progress-bar-container" id="progressBarContainer">
+                <div class="progress-bar-hover" id="progressBarHover"></div>
+                <div class="progress-bar">
+                    <div class="progress-filled" id="progressFilled"></div>
+                </div>
+            </div>
+
+            <div class="controls-main">
+                <div class="controls-left">
+                    <button class="control-button" id="playPauseBtn" aria-label="Play/Pause"><i class="fas fa-play"></i></button>
+                    <button class="control-button" id="volumeBtn" aria-label="Mute/Unmute"><i class="fas fa-volume-up"></i></button>
+                    <div class="volume-container">
+                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+                    </div>
+                    <span class="time-display" id="currentTime">0:00</span>
+                </div>
+
+                <div class="controls-center">
+                    <button class="control-button" id="rewindBtn" aria-label="Rewind 10 seconds"><i class="fas fa-undo-alt"></i></button>
+                    <button class="control-button" id="forwardBtn" aria-label="Forward 10 seconds"><i class="fas fa-redo-alt"></i></button>
+                </div>
+
+                <div class="controls-right">
+                    <span class="time-display" id="totalTime">0:00</span>
+                    <button class="control-button" id="fullscreenBtn" aria-label="Fullscreen"><i class="fas fa-expand"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Try to load FFmpeg, but don't block if offline
+        let ffmpegLoaded = false;
+        let FFmpeg, FFmpegUtil;
+
+        async function loadFFmpeg() {
+            try {
+                // Try to load FFmpeg dynamically
+                const ffmpegScript = document.createElement('script');
+                ffmpegScript.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js';
+                
+                const utilScript = document.createElement('script');
+                utilScript.src = 'https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js';
+                
+                await Promise.all([
+                    new Promise((resolve, reject) => {
+                        ffmpegScript.onload = resolve;
+                        ffmpegScript.onerror = reject;
+                        document.head.appendChild(ffmpegScript);
+                    }),
+                    new Promise((resolve, reject) => {
+                        utilScript.onload = resolve;
+                        utilScript.onerror = reject;
+                        document.head.appendChild(utilScript);
+                    })
+                ]);
+                
+                FFmpeg = window.FFmpeg;
+                FFmpegUtil = window.FFmpegUtil;
+                ffmpegLoaded = true;
+                console.log('FFmpeg loaded successfully');
+            } catch (error) {
+                console.warn('FFmpeg not available (offline mode):', error);
+                ffmpegLoaded = false;
+            }
+        }
+
+        // Load FFmpeg when online
+        loadFFmpeg();
+        </script>
+
+
+    <script>
+        const playerContainer = document.getElementById('videoPlayerContainer');
+        const video = document.getElementById('customPlayer');
+        const videoControls = document.getElementById('videoControls');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const bigPlayBtn = document.getElementById('bigPlayBtn');
+        const rewindBtn = document.getElementById('rewindBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const progressFilled = document.getElementById('progressFilled');
+        const progressBarHover = document.getElementById('progressBarHover');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const loadingText = document.getElementById('loadingText');
+
+        const seekOverlayLeft = document.getElementById('seekOverlayLeft');
+        const seekOverlayRight = document.getElementById('seekOverlayRight');
+        const seekFeedbackRewind = document.getElementById('seekFeedbackRewind');
+        const seekFeedbackForward = document.getElementById('seekFeedbackForward');
+
+        let controlsTimeout;
+        let lastTapTimeLeft = 0;
+        let lastTapTimeRight = 0;
+        const doubleTapDelay = 300; // ms for double tap detection
+        let feedbackTimeout;
+        let ffmpeg; // To hold the ffmpeg instance
+
+        if (!('ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0)) {
+            playerContainer.classList.add('desktop');
+        }
+
+        // --- NEW: MKV Processing and Video Source Handling ---
+        const handleVideoSource = async (src) => {
+            const url = decodeURIComponent(src);
+            
+            // Check if the source is an MKV file
+            if (url.toLowerCase().endsWith('.mkv')) {
+                // Check if FFmpeg is available
+                if (!ffmpegLoaded) {
+                    playerContainer.classList.add('error');
+                    loadingText.textContent = 'MKV files require internet connection for processing';
+                    return;
+                }
+                
+                playerContainer.classList.add('processing');
+                loadingText.textContent = 'Processing video...';
+
+                try {
+                    if (!ffmpeg) {
+                        ffmpeg = new FFmpeg.FFmpeg();
+                        ffmpeg.on('log', ({ message }) => {
+                            console.log(message);
+                        });
+                        loadingText.textContent = 'Loading converter...';
+                        await ffmpeg.load({
+                            coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js"
+                        });
+                    }
+
+                    loadingText.textContent = 'Fetching video...';
+                    const { fetchFile } = FFmpegUtil;
+                    const inputData = await fetchFile(url);
+                    await ffmpeg.writeFile('input.mkv', inputData);
+                    
+                    loadingText.textContent = 'Converting...';
+                    await ffmpeg.exec(['-i', 'input.mkv', '-c', 'copy', 'output.mp4']);
+
+                    const outputData = await ffmpeg.readFile('output.mp4');
+                    const dataBlob = new Blob([outputData.buffer], { type: 'video/mp4' });
+                    video.src = URL.createObjectURL(dataBlob);
+
+                } catch (error) {
+                    console.error("Error processing MKV file:", error);
+                    loadingText.textContent = `Error: Could not process video.`;
+                    playerContainer.classList.remove('processing');
+                    playerContainer.classList.add('error');
+                    return;
+                }
+
+                playerContainer.classList.remove('processing');
+                loadingText.textContent = '';
+            } else {
+                // For non-MKV files, just set the source directly
+                video.src = url;
+            }
+        };
+
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoSrc = urlParams.get('video');
+            const fullParam = urlParams.get('full');
+
+            if (videoSrc) {
+                handleVideoSource(videoSrc);
+                if (fullParam === 'true') {
+                    playerContainer.classList.add('fullscreen-mode');
+                }
+            } else {
+                playerContainer.innerHTML = '<p style="color:white; text-align:center; padding: 20px;">Error: No video source specified. Add ?video=VIDEO_URL to the address.</p>';
+                return;
+            }
+        });
+        
+        video.addEventListener('waiting', () => {
+            playerContainer.classList.add('loading');
+            loadingText.textContent = "Loading...";
+        });
+        video.addEventListener('canplay', () => {
+            playerContainer.classList.remove('loading');
+            loadingText.textContent = "";
+        });
+        video.addEventListener('playing', () => {
+            playerContainer.classList.remove('loading');
+            loadingText.textContent = "";
+        });
+
+        function togglePlay() {
+            playerContainer.classList.add('has-interacted');
+            if (video.paused || video.ended) {
+                video.play().catch(err => console.error("Play error:", err));
+            } else {
+                video.pause();
+            }
+        }
+        playPauseBtn.addEventListener('click', togglePlay);
+        bigPlayBtn.addEventListener('click', togglePlay);
+        
+        let videoTapTimeout;
+        video.addEventListener('click', (event) => {
+            if (event.target === seekOverlayLeft || event.target === seekOverlayRight) return;
+            if (event.detail === 1) {
+                videoTapTimeout = setTimeout(() => {
+                     if (playerContainer.classList.contains('controls-active') && !video.paused) {
+                        hideControls();
+                    } else {
+                        togglePlay();
+                    }
+                }, 200);
+            }
+        });
+
+        video.addEventListener('play', () => {
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            playerContainer.classList.add('playing');
+            playerContainer.classList.remove('paused');
+            hideControlsWithDelay();
+        });
+        video.addEventListener('pause', () => {
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            playerContainer.classList.remove('playing');
+            playerContainer.classList.add('paused');
+            showControls();
+        });
+
+        rewindBtn.addEventListener('click', () => { video.currentTime -= 10; });
+        forwardBtn.addEventListener('click', () => { video.currentTime += 10; });
+
+        video.addEventListener('loadedmetadata', () => {
+            totalTimeEl.textContent = formatTime(video.duration);
+            progressFilled.style.width = '0%';
+        });
+        video.addEventListener('timeupdate', () => {
+            currentTimeEl.textContent = formatTime(video.currentTime);
+            const progressPercent = (video.currentTime / video.duration) * 100;
+            progressFilled.style.width = `${progressPercent}%`;
+        });
+
+        function formatTime(timeInSeconds) {
+            if (isNaN(timeInSeconds) || timeInSeconds < 0) return "0:00";
+            const minutes = Math.floor(timeInSeconds / 60);
+            const seconds = Math.floor(timeInSeconds % 60).toString().padStart(2, '0');
+            return `${minutes}:${seconds}`;
+        }
+
+        progressBarContainer.addEventListener('click', (e) => {
+            const rect = progressBarContainer.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            video.currentTime = (clickX / rect.width) * video.duration;
+        });
+        progressBarContainer.addEventListener('mousemove', (e) => {
+            if (!video.duration) return;
+            const rect = progressBarContainer.getBoundingClientRect();
+            progressBarHover.style.width = `${Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100))}%`;
+        });
+        progressBarContainer.addEventListener('mouseleave', () => progressBarHover.style.width = `0%`);
+
+        function toggleMute() { video.muted = !video.muted; }
+        volumeBtn.addEventListener('click', toggleMute);
+        video.addEventListener('volumechange', () => {
+            volumeSlider.value = video.volume;
+            if (video.muted || video.volume === 0) {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                volumeSlider.value = 0;
+            } else if (video.volume < 0.5) {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+            } else {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        });
+        volumeSlider.addEventListener('input', (e) => {
+            video.volume = e.target.value;
+            video.muted = e.target.value === '0';
+        });
+
+        // --- UPDATED: Fullscreen Logic for Mobile & Desktop ---
+        function isFullscreen() {
+            // Check standard API and iOS-specific property
+            return !!(document.fullscreenElement || document.webkitFullscreenElement || video.webkitDisplayingFullscreen);
+        }
+
+        function toggleFullscreen() {
+            // Use the video-element-specific API on iOS/Safari
+            if (video.webkitEnterFullscreen) {
+                if (video.webkitDisplayingFullscreen) {
+                    video.webkitExitFullscreen();
+                } else {
+                    video.webkitEnterFullscreen();
+                }
+            } else { // Use the standard API for the container on other browsers
+                if (isFullscreen()) {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                } else {
+                    if (playerContainer.requestFullscreen) playerContainer.requestFullscreen();
+                    else if (playerContainer.webkitRequestFullscreen) playerContainer.webkitRequestFullscreen();
+                }
+            }
+        }
+
+        function updateFullscreenVisuals() {
+            if (isFullscreen()) {
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                playerContainer.classList.add('fullscreen');
+            } else {
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                playerContainer.classList.remove('fullscreen');
+            }
+        }
+        
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        video.addEventListener('dblclick', (event) => {
+            clearTimeout(videoTapTimeout);
+            if (event.target === seekOverlayLeft || event.target === seekOverlayRight) return;
+            toggleFullscreen();
+        });
+
+        // Listen to all possible fullscreen change events
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(
+            event => document.addEventListener(event, updateFullscreenVisuals)
+        );
+        // Also listen to iOS-specific events on the video element
+        video.addEventListener('webkitbeginfullscreen', updateFullscreenVisuals);
+        video.addEventListener('webkitendfullscreen', updateFullscreenVisuals);
+
+        // --- Controls Visibility Logic (unchanged) ---
+        function showControls() {
+            clearTimeout(controlsTimeout);
+            playerContainer.classList.add('controls-active');
+        }
+        function hideControls() {
+            if (video.paused) return;
+            playerContainer.classList.remove('controls-active');
+        }
+        function hideControlsWithDelay() {
+            if (video.paused) return;
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(hideControls, 3000);
+        }
+
+        playerContainer.addEventListener('mousemove', () => {
+            showControls();
+            hideControlsWithDelay();
+        });
+        playerContainer.addEventListener('mouseleave', () => {
+             if (!video.paused) hideControls();
+        });
+        videoControls.addEventListener('mouseenter', showControls);
+        videoControls.addEventListener('mouseleave', hideControlsWithDelay);
+        
+        playerContainer.addEventListener('touchstart', (event) => {
+            if (event.target.closest('.control-button')) return;
+            if (playerContainer.classList.contains('controls-active')) {
+                // Future: Tap on video to hide controls could be handled here
+            } else {
+                showControls();
+            }
+            hideControlsWithDelay();
+        }, { passive: true });
+
+        // --- Double Tap Seek Logic (unchanged) ---
+        function showSeekFeedback(element) {
+            clearTimeout(feedbackTimeout);
+            element.classList.add('show');
+            feedbackTimeout = setTimeout(() => {
+                element.classList.remove('show');
+            }, 600);
+        }
+
+        seekOverlayLeft.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentTime = Date.now();
+            if (currentTime - lastTapTimeLeft < doubleTapDelay) {
+                clearTimeout(videoTapTimeout);
+                video.currentTime -= 10;
+                showSeekFeedback(seekFeedbackRewind);
+                lastTapTimeLeft = 0;
+            } else {
+                lastTapTimeLeft = currentTime;
+                if (playerContainer.classList.contains('controls-active') && !video.paused) {
+                    hideControls();
+                } else {
+                    showControls();
+                    hideControlsWithDelay();
+                }
+            }
+        });
+
+        seekOverlayRight.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentTime = Date.now();
+            if (currentTime - lastTapTimeRight < doubleTapDelay) {
+                clearTimeout(videoTapTimeout);
+                video.currentTime += 10;
+                showSeekFeedback(seekFeedbackForward);
+                lastTapTimeRight = 0;
+            } else {
+                lastTapTimeRight = currentTime;
+                if (playerContainer.classList.contains('controls-active') && !video.paused) {
+                    hideControls();
+                } else {
+                    showControls();
+                    hideControlsWithDelay();
+                }
+            }
+        });
+        
+        // --- Keyboard Shortcuts (unchanged) ---
+        document.addEventListener('keydown', (e) => {
+            const activeEl = document.activeElement;
+            if (activeEl && ['INPUT', 'TEXTAREA'].includes(activeEl.tagName)) {
+               return; 
+            }
+            
+            switch(e.key.toLowerCase()) {
+                case ' ': case 'k': e.preventDefault(); togglePlay(); break;
+                case 'arrowleft': case 'j': e.preventDefault(); video.currentTime -= 10; break;
+                case 'arrowright': case 'l': e.preventDefault(); video.currentTime += 10; break;
+                case 'arrowup': e.preventDefault(); if(video.volume < 1) video.volume = Math.min(1, video.volume + 0.1); break;
+                case 'arrowdown': e.preventDefault(); if(video.volume > 0) video.volume = Math.max(0, video.volume - 0.1); break;
+                case 'm': e.preventDefault(); toggleMute(); break;
+                case 'f': e.preventDefault(); toggleFullscreen(); break;
+            }
+        });
+    </script>
+</body>
+</html>

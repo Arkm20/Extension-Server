@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Animex Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="Resources/manga.css" />
+
+    <!-- PDF.js for integrated reader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
+    </script>
+
+    <style>
+      :root {
+        --bg-primary: #121212;
+        --bg-secondary: #18181b;
+        --surface-color: #27272a;
+        --border-color: #3f3f46;
+        --text-primary: #f4f4f5;
+        --text-secondary: #a1a1aa;
+        --accent-color: #ff9500;
+        --accent-color-rgb: 255, 149, 0;
+        --accent-hover: #ffae45;
+        --font-family: "Inter", sans-serif;
+        --radius-md: 12px;
+        --radius-sm: 8px;
+      }
+
+      /* --- Global & Base Styles --- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-family);
+        overflow-x: hidden;
+        padding-bottom: 120px; /* Safe area for nav bar */
+      }
+      .hidden {
+        display: none !important;
+      }
+
+      /* --- Main App Container & Views --- */
+      .app-view {
+        min-height: 100vh;
+        padding: 24px;
+        animation: fadeIn 0.4s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* --- Header & Navigation --- */
+      .view-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .view-title {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+      .back-btn,
+      .action-btn {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 10px 16px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s, border-color 0.2s;
+      }
+      .back-btn:hover,
+      .action-btn:hover {
+        background-color: #3f3f46;
+        border-color: #52525b;
+      }
+      .view-header .action-btn {
+        margin-left: auto;
+      }
+
+      /* --- Section Styles --- */
+      .section {
+        margin-bottom: 40px;
+      }
+      .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      /* --- Grid for Series/Lists --- */
+      .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 20px;
+      }
+      .grid-item {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        border-radius: var(--radius-sm);
+      }
+      .grid-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(var(--accent-color-rgb), 0.4);
+      }
+      .grid-item-poster {
+        width: 100%;
+        aspect-ratio: 2 / 3;
+        border-radius: var(--radius-sm);
+        object-fit: cover;
+        background-color: var(--surface-color);
+        display: block;
+        border: 1px solid var(--border-color);
+        margin-bottom: 8px;
+      }
+      .grid-item-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .list-grid-item-title {
+        font-weight: 600;
+      }
+
+      /* --- Details View --- */
+      /* Most styles are now inherited from manga.css */
+      #details-view {
+        padding: 0; /* Remove default padding to allow hero to be full-width */
+      }
+      #details-view .item-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      /* --- Integrated Player View --- */
+      #player-view {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+      }
+      #player-view .player-header {
+        padding: 12px 16px;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-shrink: 0;
+      }
+      #player-view .player-title {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #player-view .player-main {
+        flex-grow: 1;
+        position: relative;
+      }
+      #player-view .video-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #player-view video {
+        width: 100%;
+        height: 100%;
+      }
+      #player-view .episode-shelf {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 50%;
+        background: rgba(18, 18, 18, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--border-color);
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        padding: 16px;
+      }
+      #player-view .episode-shelf.visible {
+        transform: translateY(0);
+      }
+      #player-view .shelf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      #shelf-item-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #shelf-item-list .list-episode {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        padding: 12px 16px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      #shelf-item-list .list-episode:hover {
+        background-color: #3f3f46;
+      }
+      #shelf-item-list .list-episode-num {
+        font-weight: 700;
+        color: var(--text-secondary);
+      }
+      #shelf-item-list .list-episode-title {
+        font-weight: 500;
+      }
+
+      /* --- Integrated PDF Reader View --- */
+      #pdf-reader-view {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--bg-primary);
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+      }
+      #pdf-reader-main {
+        flex-grow: 1;
+        overflow: auto;
+        text-align: center;
+      }
+      #pdf-canvas {
+        max-width: 100%;
+        height: auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      }
+      .pdf-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        padding: 12px;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+      }
+
+      @media (max-width: 768px) {
+        .app-view {
+          padding: 16px;
+        }
+        .view-title {
+          font-size: 1.5rem;
+        }
+        .content-grid {
+          grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ======== VIEW 1: MAIN LIBRARY ======== -->
+    <div id="main-view" class="app-view">
+      <div class="view-header">
+        <h1 class="view-title">Library</h1>
+        <button id="import-folder-btn" class="action-btn">
+          <i class="fas fa-folder-plus"></i> Import Folder
+        </button>
+        <input
+          type="file"
+          id="legacy-folder-input"
+          webkitdirectory
+          directory
+          multiple
+          class="hidden"
+        />
+      </div>
+
+      <div id="lists-section" class="section">
+        <h2 class="section-title">My Lists</h2>
+        <div id="lists-grid" class="content-grid"></div>
+      </div>
+
+      <div id="anime-section" class="section hidden">
+        <h2 class="section-title">Anime</h2>
+        <div id="anime-grid" class="content-grid"></div>
+      </div>
+
+      <div id="manga-section" class="section hidden">
+        <h2 class="section-title">Manga</h2>
+        <div id="manga-grid" class="content-grid"></div>
+      </div>
+
+      <p
+        id="library-placeholder"
+        style="text-align: center; color: var(--text-secondary); padding: 40px"
+      >
+        Your library is empty. Click "Import Folder" to scan for series.
+      </p>
+    </div>
+
+    <!-- ======== VIEW 2: SERIES DETAILS (REDESIGNED) ======== -->
+    <div id="details-view" class="hidden">
+      <div id="hero-section">
+          <div class="hero-overlay"></div>
+          <button class="back-btn" data-target-view="main-view"><i class="fas fa-arrow-left"></i></button>
+          <div class="cover-art-container">
+              <img id="details-poster" src="" alt="Cover Art">
+          </div>
+      </div>
+      <div id="content-sheet">
+          <h1 id="details-title-en" class="manga-title-en"></h1>
+          <h2 id="details-title-jp" class="manga-title-jp"></h2>
+          
+          <div class="synopsis-container">
+              <h3>Synopsis</h3>
+              <p id="details-synopsis"></p>
+          </div>
+
+          <div class="tabs-section">
+              <div class="tabs-container">
+                  <button id="items-tab-btn" class="tab-btn active">Episodes / Chapters</button>
+              </div>
+              <div id="items-panel" class="tab-panel active">
+                  <div class="view-header" style="margin-bottom: 1rem; padding: 0; justify-content: space-between;">
+                      <h2 id="details-item-list-title" class="section-title" style="margin: 0; border: 0; font-size: 1.5rem;"></h2>
+                      <button id="map-files-btn" class="action-btn hidden">
+                          <i class="fas fa-link"></i> Map Files
+                      </button>
+                  </div>
+                  <ul id="details-item-list" class="item-list"></ul>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <!-- ======== VIEW 3: INTEGRATED PLAYER (ANIME) ======== -->
+    <div id="player-view" class="app-view hidden">
+      <header class="player-header">
+        <button class="back-btn" data-target-view="details-view">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="player-title">
+          <span id="player-series-title"></span> -
+          <span id="player-episode-title"></span>
+        </div>
+        <button
+          id="toggle-shelf-btn"
+          class="action-btn"
+          style="margin-left: auto"
+        >
+          <i class="fas fa-list-ul"></i> Episodes
+        </button>
+      </header>
+      <main class="player-main">
+        <div class="video-wrapper">
+          <video id="video-player" playsinline controls></video>
+        </div>
+        <div id="episode-shelf" class="episode-shelf">
+          <div class="shelf-header">
+            <h3 class="section-title" style="margin: 0; border: 0">Episodes</h3>
+            <button id="next-episode-btn" class="action-btn">
+              <i class="fas fa-step-forward"></i> Next
+            </button>
+          </div>
+          <div id="shelf-item-list" class="item-list"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ======== VIEW 4: PDF READER (MANGA) ======== -->
+    <div id="pdf-reader-view" class="app-view hidden">
+      <header class="player-header">
+        <button class="back-btn" data-target-view="details-view">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="player-title">
+          <span id="pdf-series-title"></span> -
+          <span id="pdf-chapter-title"></span>
+        </div>
+      </header>
+      <main id="pdf-reader-main">
+        <canvas id="pdf-canvas"></canvas>
+      </main>
+      <footer class="pdf-controls">
+        <button id="pdf-prev" class="action-btn">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <span id="pdf-page-num"></span> / <span id="pdf-page-count"></span>
+        <button id="pdf-next" class="action-btn">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </footer>
+    </div>
+
+    <!-- ======== VIEW 5: LIST DETAILS ======== -->
+    <div id="list-view" class="app-view hidden">
+      <div class="view-header">
+        <button class="back-btn" data-target-view="main-view">
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
+        <h1 id="list-title" class="view-title">List Name</h1>
+      </div>
+      <div id="list-content-grid" class="content-grid"></div>
+      <p
+        id="list-placeholder"
+        class="hidden"
+        style="text-align: center; color: var(--text-secondary); padding: 40px"
+      >
+        This list is empty or contains items not in your library.
+      </p>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- STATE MANAGEMENT ---
+        let libraryData = { anime: {}, manga: {} };
+        let userLists = {};
+        let currentSeriesId = null;
+        let activeObjectUrls = new Set();
+        const LISTS_STORAGE_KEY = "animex_lists_v1";
+
+        // --- DOM ELEMENTS ---
+        const views = {
+          main: document.getElementById("main-view"),
+          details: document.getElementById("details-view"),
+          player: document.getElementById("player-view"),
+          pdfReader: document.getElementById("pdf-reader-view"),
+          list: document.getElementById("list-view"),
+        };
+        const legacyFolderInput = document.getElementById(
+          "legacy-folder-input"
+        );
+        const pdfState = { pdfDoc: null, pageNum: 1, loadingTask: null };
+
+        // --- VIEW CONTROLLER ---
+        function cleanupResources() {
+          activeObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+          activeObjectUrls.clear();
+          if (pdfState.pdfDoc) {
+            pdfState.pdfDoc
+              .destroy()
+              .catch((e) => console.error("Error destroying PDF doc", e));
+            pdfState.pdfDoc = null;
+          }
+          if (pdfState.loadingTask && pdfState.loadingTask.destroy) {
+            pdfState.loadingTask.destroy();
+            pdfState.loadingTask = null;
+          }
+        }
+
+        async function showView(viewName, ...args) {
+          cleanupResources();
+          Object.values(views).forEach((v) => v.classList.add("hidden"));
+          views[viewName].classList.remove("hidden");
+
+          switch (viewName) {
+            case "details":
+              renderDetailsView(...args);
+              break;
+            case "player":
+              renderPlayerView(...args);
+              break;
+            case "pdfReader":
+              renderPdfReaderView(...args);
+              break;
+            case "list":
+              await renderListView(...args);
+              break;
+            case "main":
+            default:
+              renderMainView();
+              break;
+          }
+          window.scrollTo(0, 0);
+        }
+
+        // --- FILE IMPORT & PROCESSING ---
+        document
+        .getElementById("import-folder-btn")
+        .addEventListener("click", async () => {
+          if ("showDirectoryPicker" in window) {
+            try {
+              const dirHandle = await window.showDirectoryPicker();
+              await processDirectoryHandle(dirHandle);
+            } catch (err) {
+              if (err.name !== "AbortError") {
+                window.parent.showToast("Error importing directory: " + err.message, 'error');
+                console.error("Error importing directory:", err);
+              }
+            }
+          } else {
+            legacyFolderInput.value = ""; 
+            legacyFolderInput.click();
+          }
+        });
+
+        legacyFolderInput.addEventListener("change", (event) => {
+          const files = Array.from(event.target.files);
+          if (files.length > 0) {
+            processFiles(files);
+          } else {
+            window.parent.showToast("No files selected. Please select a folder to import.", 'info');
+          }
+        });
+
+        async function processDirectoryHandle(dirHandle) {
+          const allFiles = [];
+          async function getFilesRecursively(directoryHandle, path) {
+            for await (const entry of directoryHandle.values()) {
+              const newPath = path ? `${path}/${entry.name}` : entry.name;
+              if (entry.kind === "file") {
+                const file = await entry.getFile();
+                Object.defineProperty(file, "webkitRelativePath", {
+                  value: newPath,
+                  configurable: true,
+                });
+                allFiles.push(file);
+              } else if (entry.kind === "directory") {
+                await getFilesRecursively(entry, newPath);
+              }
+            }
+          }
+          await getFilesRecursively(dirHandle, "");
+          if (allFiles.length === 0) {
+            window.parent.showToast("No files found in the selected directory.", 'info');
+            return;
+          }
+          processFiles(allFiles);
+        }
+
+        async function processFiles(files) {
+            if (!files || files.length === 0) {
+                window.parent.showToast("No files found to import.", 'info');
+                return;
+            }
+            const newLibraryData = { anime: {}, manga: {} };
+            const directoryContents = new Map();
+
+            for (const file of files) {
+                const path = file.webkitRelativePath || file.name;
+                const i = path.lastIndexOf("/");
+                const dirPath = i === -1 ? "" : path.substring(0, i);
+                if (!directoryContents.has(dirPath)) {
+                    directoryContents.set(dirPath, []);
+                }
+                directoryContents.get(dirPath).push(file);
+            }
+
+            let seriesImported = 0;
+            for (const [dirPath, seriesFiles] of directoryContents.entries()) {
+                const metaFile = seriesFiles.find(f => f.name.toLowerCase() === "meta.json");
+                if (!metaFile) continue;
+
+                try {
+                    const meta = JSON.parse(await metaFile.text());
+                    const seriesId = dirPath.split("/").pop() || meta.title.replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-").toLowerCase();
+                    if (!seriesId) continue;
+
+                    const mediaExtensions = /\.(mp4|mkv|webm|avi|pdf)$/i;
+                    const posterMatch = /^poster\./;
+                    
+                    meta.posterFile = seriesFiles.find(f => posterMatch.test(f.name.toLowerCase())) || null;
+                    meta.rawFiles = seriesFiles.filter(f => mediaExtensions.test(f.name));
+                    meta.isMapped = false;
+
+                    if (meta.type && newLibraryData[meta.type]) {
+                        newLibraryData[meta.type][seriesId] = meta;
+                        seriesImported++;
+                    }
+                } catch (e) {
+                    window.parent.showToast(`Could not process series at path: ${dirPath}
+${e.message}`, 'error');
+                    console.warn(`Could not process series at path: ${dirPath}`, e);
+                }
+            }
+
+            if (seriesImported === 0) {
+                window.parent.showToast("No valid series found. Make sure each series folder contains a meta.json file.", 'info');
+            } else {
+                window.parent.showToast(`${seriesImported} series imported successfully.`, 'success');
+            }
+            libraryData = newLibraryData;
+            showView("main");
+        }
+
+        async function mapSeriesFiles(seriesId, type) {
+            const series = libraryData[type]?.[seriesId];
+            if (!series || series.isMapped) return;
+
+            console.log(`Mapping files for ${series.title}...`);
+
+            const itemsKey = type === 'anime' ? 'episodes' : 'chapters';
+            const seriesItems = series[itemsKey] || [];
+            const rawFiles = series.rawFiles || [];
+            if (seriesItems.length === 0 || rawFiles.length === 0) {
+                series.isMapped = true;
+                return;
+            }
+
+            function extractItemNumber(filename) {
+                const cleanedName = filename.toLowerCase().replace(/\[.*?\]/g, ' ').replace(/\(.*?\)/g, ' ');
+                let match = cleanedName.match(/s\d+[e](\d+)/);
+                if (match) return parseInt(match[1]);
+                match = cleanedName.match(/(?:e|ep|episode)[\s._-]*(\d+)/);
+                if (match) return parseInt(match[1]);
+                if (type === 'manga') {
+                    match = cleanedName.match(/(?:c|ch|chapter)[\s._-]*(\d+)/);
+                    if (match) return parseInt(match[1]);
+                }
+                match = cleanedName.match(/[\s._-](\d{1,4})[\s._-]/);
+                if (match) {
+                    const num = parseInt(match[1]);
+                    if (![480, 720, 1080, 2160].includes(num) && (num < 1900 || num > 2050)) {
+                        return num;
+                    }
+                }
+                const allNumbers = cleanedName.match(/\d+/g) || [];
+                for (const numStr of allNumbers) {
+                    const num = parseInt(numStr);
+                     if (![480, 720, 1080, 2160].includes(num) && (num < 1900 || num > 2050)) {
+                        return num;
+                    }
+                }
+                return null;
+            }
+
+            const fileMap = new Map();
+            rawFiles.forEach(file => {
+                const itemNum = extractItemNumber(file.name);
+                if (itemNum !== null && !fileMap.has(itemNum)) {
+                    fileMap.set(itemNum, file);
+                }
+            });
+
+            let filesMappedCount = 0;
+            seriesItems.forEach(item => {
+                const itemNum = item.episode || item.chapter;
+                if (fileMap.has(itemNum)) {
+                    item.file = fileMap.get(itemNum);
+                    filesMappedCount++;
+                }
+            });
+
+            series.isMapped = true;
+            console.log(`Mapping complete for ${series.title}. Mapped ${filesMappedCount} of ${seriesItems.length} items.`);
+
+            if (currentSeriesId && currentSeriesId.seriesId === seriesId) {
+                renderDetailsView(seriesId, type);
+            }
+        }
+
+        // --- RENDERING LOGIC ---
+        function renderMainView() {
+          loadLists();
+          const animeGrid = document.getElementById("anime-grid");
+          const mangaGrid = document.getElementById("manga-grid");
+          const listsGrid = document.getElementById("lists-grid");
+          const animeSection = document.getElementById("anime-section");
+          const mangaSection = document.getElementById("manga-section");
+          const listsSection = document.getElementById("lists-section");
+          const placeholder = document.getElementById("library-placeholder");
+
+          animeGrid.innerHTML = "";
+          mangaGrid.innerHTML = "";
+          listsGrid.innerHTML = "";
+
+          const hasAnime = Object.keys(libraryData.anime).length > 0;
+          const hasManga = Object.keys(libraryData.manga).length > 0;
+          const hasLists = Object.keys(userLists).length > 0;
+
+          placeholder.classList.toggle("hidden", hasAnime || hasManga);
+          animeSection.classList.toggle("hidden", !hasAnime);
+          mangaSection.classList.toggle("hidden", !hasManga);
+          listsSection.classList.toggle("hidden", !hasLists);
+
+          for (const [id, series] of Object.entries(libraryData.anime)) {
+            animeGrid.innerHTML += createGridItem(id, series);
+          }
+          for (const [id, series] of Object.entries(libraryData.manga)) {
+            mangaGrid.innerHTML += createGridItem(id, series);
+          }
+          for (const listName of Object.keys(userLists)) {
+            listsGrid.innerHTML += createGridItem(listName, null, true);
+          }
+        }
+
+        function createGridItem(id, series, isList = false) {
+            let title, posterUrl;
+            const malIdAttr = (!isList && series && series.mal_id) ? `data-mal-id="${series.mal_id}"` : '';
+
+            if (isList) {
+                title = id;
+                posterUrl = "https://placehold.co/300x450/18181B/A1A1AA?text=LIST";
+            } else {
+                title = series.title;
+                if (series.posterFile) {
+                    if (typeof series.posterFile === "string") {
+                        posterUrl = series.posterFile;
+                    } else {
+                        posterUrl = URL.createObjectURL(series.posterFile);
+                        activeObjectUrls.add(posterUrl);
+                    }
+                } else {
+                    posterUrl = "https://placehold.co/300x450/27272A/A1A1AA?text=No+Poster";
+                }
+            }
+            const dataType = isList ? "list" : series.type;
+            const mangaTag = (!isList && series && series.type === 'manga') ? `<div style="position:absolute;top:8px;left:8px;z-index:2;"><span style="background:#ff9500;color:#fff;font-size:0.75em;font-weight:700;padding:2px 8px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.2);letter-spacing:1px;">Manga</span></div>` : "";
+            
+            return `
+                <div class="grid-item" data-id="${id}" data-type="${dataType}" ${malIdAttr} style="position:relative;">
+                    <img src="${posterUrl}" alt="${title}" class="grid-item-poster">
+                    ${mangaTag}
+                    <p class="grid-item-title ${isList ? "list-grid-item-title" : ""}">${title}</p>
+                </div>`;
+        }
+
+        function renderDetailsView(seriesId, type) {
+            currentSeriesId = { seriesId, type };
+            const series = libraryData[type]?.[seriesId];
+            if (!series) return showView("main");
+
+            const posterUrl = (series.posterFile)
+                ? (typeof series.posterFile === 'string' ? series.posterFile : URL.createObjectURL(series.posterFile))
+                : "https://placehold.co/300x450/27272A/A1A1AA?text=No+Poster";
+            
+            if (series.posterFile && typeof series.posterFile !== 'string') {
+                activeObjectUrls.add(posterUrl);
+            }
+
+            document.getElementById("hero-section").style.backgroundImage = `url(${posterUrl})`;
+            document.getElementById("details-poster").src = posterUrl;
+            document.getElementById("details-title-en").textContent = series.title;
+            document.getElementById("details-title-jp").textContent = series.original_title || '';
+            document.getElementById("details-synopsis").textContent = series.synopsis || "No synopsis available.";
+            
+            const itemsKey = type === "anime" ? "episodes" : "chapters";
+            const itemListEl = document.getElementById("details-item-list");
+            const itemListTitle = document.getElementById("details-item-list-title");
+            const mapBtn = document.getElementById('map-files-btn');
+            
+            itemListEl.innerHTML = "";
+            mapBtn.classList.add('hidden');
+
+            if (series.isMapped) {
+                itemListTitle.textContent = itemsKey.charAt(0).toUpperCase() + itemsKey.slice(1);
+                const items = series[itemsKey] || [];
+                if (items.length === 0) {
+                     itemListEl.innerHTML = `<p style="color: var(--text-secondary);">No ${itemsKey} found in metadata.</p>`;
+                     return;
+                }
+                items.sort((a, b) => (a.episode || a.chapter) - (b.episode || b.chapter))
+                    .forEach((item) => {
+                        if (!item.file) return;
+                        const itemNum = item.episode || item.chapter;
+                        const li = document.createElement('li');
+                        li.className = 'chapter-item';
+                        li.dataset.itemNum = itemNum;
+                        li.innerHTML = `
+                            <div class="chapter-thumbnail" style="background-image: url('${item.image || ''}')">
+                                <div class="chapter-number-display">${itemNum}</div>
+                            </div>
+                            <div class="chapter-details">
+                                <p class="chapter-title">${item.title || "No Title"}</p>
+                                <p class="chapter-meta">${type === 'anime' ? 'Episode' : 'Chapter'} ${itemNum}</p>
+                            </div>
+                        `;
+                        itemListEl.appendChild(li);
+                    });
+            } else {
+                itemListTitle.textContent = "Unmapped Local Files";
+                mapBtn.classList.remove('hidden');
+                mapBtn.disabled = false;
+                mapBtn.innerHTML = '<i class="fas fa-link"></i> Map Files';
+                mapBtn.onclick = () => {
+                    mapBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mapping...';
+                    mapBtn.disabled = true;
+                    setTimeout(() => mapSeriesFiles(seriesId, type), 100);
+                };
+
+                if (series.rawFiles && series.rawFiles.length > 0) {
+                    series.rawFiles.forEach((file, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'chapter-item';
+                        li.dataset.rawFileIndex = index;
+                        li.innerHTML = `
+                            <div class="chapter-details">
+                                <p class="chapter-title">${file.name}</p>
+                            </div>
+                            <div class="chapter-actions"><i class="fas fa-play"></i></div>
+                        `;
+                        itemListEl.appendChild(li);
+                    });
+                } else {
+                    itemListEl.innerHTML = `<p style="color: var(--text-secondary);">No local files found for this series.</p>`;
+                }
+                setTimeout(() => mapSeriesFiles(seriesId, type), 500);
+            }
+        }
+
+        async function renderListView(listName) {
+          document.getElementById("list-title").textContent = listName;
+          const grid = document.getElementById("list-content-grid");
+          const placeholder = document.getElementById("list-placeholder");
+          grid.innerHTML = "";
+
+          const listContent = userLists[listName] || [];
+          let itemsFound = 0;
+
+          const renderPromises = listContent.map(async ([seriesMalId, items]) => {
+            const stringMalId = String(seriesMalId);
+            
+            const foundAnime = Object.entries(libraryData.anime).find(
+              ([id, data]) => String(data.mal_id) === stringMalId
+            );
+            const foundManga = Object.entries(libraryData.manga).find(
+              ([id, data]) => String(data.mal_id) === stringMalId
+            );
+
+            const [seriesId, seriesData] = foundAnime || foundManga || [null, null];
+
+            if (seriesData) {
+              itemsFound++;
+              return createGridItem(seriesId, seriesData);
+            } 
+            
+            if (navigator.onLine) {
+              try {
+                let resp = await fetch(`https://api.jikan.moe/v4/anime/${stringMalId}`);
+                let type = 'anime';
+                if (!resp.ok) {
+                    resp = await fetch(`https://api.jikan.moe/v4/manga/${stringMalId}`);
+                    type = 'manga';
+                    if (!resp.ok) throw new Error(`Series ${stringMalId} not found.`);
+                }
+                
+                const data = (await resp.json()).data;
+                if (data) {
+                  const jikanSeries = {
+                    title: data.title_english || data.title || "No Title",
+                    synopsis: data.synopsis || "No synopsis available.",
+                    posterFile: data.images.jpg.image_url,
+                    type: type,
+                    mal_id: data.mal_id,
+                  };
+                  itemsFound++;
+                  return createGridItem(stringMalId, jikanSeries);
+                }
+              } catch (err) {
+                console.warn(`[renderListView] Could not fetch series from Jikan for mal_id: ${stringMalId}`, err);
+              }
+            }
+            return null;
+          });
+
+          const gridItemsHtml = (await Promise.all(renderPromises)).filter(Boolean).join('');
+          grid.innerHTML = gridItemsHtml;
+
+          placeholder.classList.toggle("hidden", itemsFound > 0);
+        }
+
+        // --- PLAYER & READER LOGIC ---
+        const videoPlayer = document.getElementById("video-player");
+        const shelfList = document.getElementById("shelf-item-list");
+
+        function renderPlayerView(seriesId, type, itemNum, rawFileIndex = null) {
+            const series = libraryData[type][seriesId];
+            const itemsKey = "episodes";
+            let currentItem, currentFile;
+
+            if (rawFileIndex !== null && series.rawFiles) {
+                currentFile = series.rawFiles[parseInt(rawFileIndex)];
+                currentItem = { episode: 'Raw File', title: currentFile.name, file: currentFile };
+            } else {
+                currentItem = series[itemsKey]?.find(ep => ep.episode == itemNum);
+                currentFile = currentItem?.file;
+            }
+
+            if (!series || !currentFile) return showView("details", seriesId, type);
+
+            document.getElementById("player-series-title").textContent = series.title;
+            document.getElementById("player-episode-title").textContent = `E${currentItem.episode} - ${currentItem.title || ""}`;
+
+            const url = URL.createObjectURL(currentFile);
+            activeObjectUrls.add(url);
+            videoPlayer.src = url;
+            videoPlayer.play();
+
+            shelfList.innerHTML = "";
+            if (series.isMapped && series[itemsKey]) {
+                series[itemsKey].sort((a, b) => a.episode - b.episode).forEach(item => {
+                    if (!item.file) return;
+                    shelfList.innerHTML += `
+                        <div class="list-episode" data-item-num="${item.episode}" style="${item.episode == itemNum ? "background:var(--accent-color); color:black;" : ""}">
+                            <span class="list-episode-num">${item.episode}</span>
+                            <span class="list-episode-title">${item.title || "No Title"}</span>
+                        </div>`;
+                });
+            }
+
+            const nextEpBtn = document.getElementById("next-episode-btn");
+            nextEpBtn.classList.add("hidden");
+            if (series.isMapped && itemNum) {
+                const sortedEpisodes = series[itemsKey].filter(ep => ep.file).sort((a, b) => a.episode - b.episode);
+                const currentIndex = sortedEpisodes.findIndex(ep => ep.episode == itemNum);
+                const nextItem = sortedEpisodes[currentIndex + 1];
+                if (nextItem) {
+                    nextEpBtn.classList.remove("hidden");
+                    nextEpBtn.dataset.itemNum = nextItem.episode;
+                }
+            }
+        }
+
+        const pdfCanvas = document.getElementById("pdf-canvas");
+        const pdfCtx = pdfCanvas.getContext("2d");
+
+        async function renderPdfReaderView(seriesId, type, itemNum, rawFileIndex = null) {
+            const series = libraryData[type][seriesId];
+            const itemsKey = "chapters";
+            let currentItem, currentFile;
+
+            if (rawFileIndex !== null && series.rawFiles) {
+                currentFile = series.rawFiles[parseInt(rawFileIndex)];
+                currentItem = { chapter: 'Raw File', title: currentFile.name, file: currentFile };
+            } else {
+                currentItem = series[itemsKey]?.find(ch => ch.chapter == itemNum);
+                currentFile = currentItem?.file;
+            }
+
+            if (!series || !currentFile) return showView("details", seriesId, type);
+
+            document.getElementById("pdf-series-title").textContent = series.title;
+            document.getElementById("pdf-chapter-title").textContent = `Chapter ${currentItem.chapter} - ${currentItem.title || ""}`;
+
+            try {
+                const fileData = await currentFile.arrayBuffer();
+                pdfState.loadingTask = pdfjsLib.getDocument(fileData);
+                pdfState.pdfDoc = await pdfState.loadingTask.promise;
+                pdfState.pageNum = 1;
+                renderPdfPage(pdfState.pageNum);
+            } catch (e) {
+                window.parent.showToast("Error loading PDF: " + e.message, 'error');
+                showView("details", seriesId, type);
+            }
+        }
+
+        function renderPdfPage(num) {
+          if (!pdfState.pdfDoc) return;
+          pdfState.pdfDoc.getPage(num).then((page) => {
+            const container = document.getElementById("pdf-reader-main");
+            const scale = Math.min(
+              2,
+              container.clientWidth / page.getViewport({ scale: 1.0 }).width
+            );
+            const viewport = page.getViewport({ scale: scale });
+
+            pdfCanvas.height = viewport.height;
+            pdfCanvas.width = viewport.width;
+            page.render({ canvasContext: pdfCtx, viewport: viewport });
+          });
+          document.getElementById("pdf-page-num").textContent = num;
+          document.getElementById("pdf-page-count").textContent =
+            pdfState.pdfDoc.numPages;
+        }
+
+        function loadLists() {
+          try {
+            const stored = localStorage.getItem(LISTS_STORAGE_KEY);
+            userLists = stored ? JSON.parse(stored) : {};
+          } catch (e) {
+            userLists = {};
+          }
+        }
+
+        // --- EVENT LISTENERS ---
+        document.body.addEventListener("click", (e) => {
+          const backBtn = e.target.closest(".back-btn");
+          if (backBtn) {
+            if (videoPlayer && !videoPlayer.paused) videoPlayer.pause();
+            const targetView = backBtn.dataset.targetView;
+            if (targetView === "details" && currentSeriesId) {
+              showView(
+                targetView,
+                currentSeriesId.seriesId,
+                currentSeriesId.type
+              );
+            } else {
+              showView("main");
+            }
+            return;
+          }
+
+          const gridItem = e.target.closest(".grid-item");
+          if (gridItem) {
+              const listView = e.target.closest("#list-view");
+              if (listView) {
+                  const malId = gridItem.dataset.malId || gridItem.dataset.id;
+                  if (malId && window.parent && typeof window.parent.openPopup === 'function') {
+                      const url = `series-info.html?id=${malId}`;
+                      window.parent.openPopup(url);
+                  }
+                  return; 
+              }
+              const id = gridItem.dataset.id;
+              const type = gridItem.dataset.type;
+              if (type === "anime" || type === "manga") showView("details", id, type);
+              else if (type === "list") showView("list", id);
+              return;
+          }
+
+          const detailsItem = e.target.closest("#details-item-list .chapter-item");
+          if (detailsItem && currentSeriesId) {
+              const { seriesId, type } = currentSeriesId;
+              const view = type === "anime" ? "player" : "pdfReader";
+              const itemNum = detailsItem.dataset.itemNum;
+              const rawFileIndex = detailsItem.dataset.rawFileIndex;
+              
+              if (itemNum) {
+                  showView(view, seriesId, type, itemNum);
+              } else if (rawFileIndex) {
+                  showView(view, seriesId, type, null, rawFileIndex);
+              }
+              return;
+          }
+
+          const shelfItem = e.target.closest("#shelf-item-list .list-episode");
+          if (shelfItem && currentSeriesId) {
+            const itemNum = shelfItem.dataset.itemNum;
+            const { seriesId, type } = currentSeriesId;
+            renderPlayerView(seriesId, type, itemNum);
+          }
+        });
+
+        document
+          .getElementById("toggle-shelf-btn")
+          .addEventListener("click", () => {
+            document
+              .getElementById("episode-shelf")
+              .classList.toggle("visible");
+          });
+
+        document
+          .getElementById("next-episode-btn")
+          .addEventListener("click", (e) => {
+            if (!currentSeriesId) return;
+            const itemNum = e.currentTarget.dataset.itemNum;
+            renderPlayerView(
+              currentSeriesId.seriesId,
+              currentSeriesId.type,
+              itemNum
+            );
+          });
+
+        document.getElementById("pdf-prev").addEventListener("click", () => {
+          if (pdfState.pageNum <= 1) return;
+          pdfState.pageNum--;
+          renderPdfPage(pdfState.pageNum);
+        });
+        document.getElementById("pdf-next").addEventListener("click", () => {
+          if (pdfState.pdfDoc && pdfState.pageNum >= pdfState.pdfDoc.numPages)
+            return;
+          pdfState.pageNum++;
+          renderPdfPage(pdfState.pageNum);
+        });
+
+        // --- INITIALIZATION ---
+        showView("main");
+      });
+    </script>
+  </body>
+</html>

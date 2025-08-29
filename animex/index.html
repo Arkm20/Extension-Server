@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Animex</title>
+
+    <!-- External Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- Meta Tags for Mobile Web App -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="manifest" href="Resources/manifest.json/" />
+    <meta name="theme-color" content="#0b0b0b" />
+
+    <link rel="icon" href="/Resources/Images/icon-196.png" type="image/png" />
+    <!-- iOS support -->
+    <link rel="apple-touch-icon" href="/Resources/Images/icon-196.png" />
+    <style>
+      :root {
+        /* Palette */
+        --color-bg-overlay: rgba(0, 0, 0, 0.75);
+        --color-bg-modal: #1c1c1e;
+        --color-bg-input: #2f2f31;
+        --color-border: rgba(255, 255, 255, 0.12);
+
+        --text-primary: #ffffff;
+        --text-secondary: #b3b3b5;
+
+        --accent: #ff9500;
+        --accent-light: #ffac33; /* hover */
+        --accent-fade: rgba(255, 149, 0, 0.3);
+
+        --status-ok: #34c759;
+        --status-error: #ff3b30;
+
+        /* Dimensions */
+        --radius: 0.5rem;
+        --spacing-sm: 0.75rem;
+        --spacing: 1rem;
+        --spacing-lg: 1.5rem;
+        --transition-fast: 0.2s ease;
+        --transition-medium: 0.3s ease;
+      }
+      /* --- GENERAL LAYOUT STYLES --- */
+      body,
+      html {
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: #111; /* Simpler background for full-screen content */
+      }
+
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative; /* Needed for z-index context */
+      }
+
+      /* The iframe is now a background layer on mobile */
+      #contentFrame {
+        flex-grow: 1;
+        width: 100%;
+        border: none;
+        display: block;
+      }
+
+      /* --- MOBILE BOTTOM NAVIGATION (UNCHANGED) --- */
+      .bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background: rgba(25, 25, 25, 0.95);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ccc;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+        z-index: 100;
+        padding-bottom: 20px;
+      }
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #8e8e93;
+        font-size: 10px;
+        font-weight: 500;
+        flex-grow: 1;
+        height: 100%;
+        padding: 8px 4px;
+        box-sizing: border-box;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      .nav-item::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #e8772e, #ff9a4d);
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+      }
+      .nav-item .nav-icon {
+        font-size: 22px;
+        margin-bottom: 4px;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      .nav-item.active {
+        color: #e8772e;
+        transform: translateY(-2px);
+      }
+      .nav-item.active::before {
+        width: 40px;
+      }
+      .nav-item.active .nav-icon {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 8px rgba(232, 119, 46, 0.4));
+      }
+      .nav-item:hover:not(.active) {
+        color: #ffffff;
+        transform: translateY(-1px);
+      }
+
+      /* --- ALL OTHER STYLES (SPLASH SCREEN, PWA BANNER, ETC. UNCHANGED) --- */
+      #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #111;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+        transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 1;
+        overflow: hidden;
+      }
+      .splash-flash {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 300vw;
+        height: 300vw;
+        background: radial-gradient(
+          ellipse at center,
+          #ffb37a 0%,
+          #de541e 30%,
+          transparent 70%
+        );
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(0.7);
+        animation: flashBang 0.7s cubic-bezier(0.7, 0, 0.3, 1) 0.7s forwards;
+      }
+      @keyframes flashBang {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.7);
+        }
+        40% {
+          opacity: 0.7;
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+        60% {
+          opacity: 0.5;
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(1.5);
+        }
+      }
+      .logo-anim-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        margin-bottom: 36px;
+        z-index: 2;
+      }
+      #splash-logo {
+        width: 120px;
+        height: 120px;
+        display: block;
+        opacity: 0;
+        transform: scale(0.7);
+        filter: drop-shadow(0 0 0 #de541e);
+        animation: logoZoomIn 0.7s cubic-bezier(0.7, 0, 0.3, 1) 0.1s forwards,
+          logoFlashGlow 1.2s 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      @keyframes logoZoomIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.7);
+        }
+        60% {
+          opacity: 1;
+          transform: scale(1.18);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes logoFlashGlow {
+        0% {
+          filter: drop-shadow(0 0 0 #de541e);
+        }
+        40% {
+          filter: drop-shadow(0 0 48px #ffb37a);
+        }
+        60% {
+          filter: drop-shadow(0 0 32px #de541ecc);
+        }
+        100% {
+          filter: drop-shadow(0 0 12px #de541eaa);
+        }
+      }
+      .splash-spinner {
+        width: 38px;
+        height: 38px;
+        border: 4px solid #222;
+        border-top: 4px solid #de541e;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+        box-shadow: 0 2px 12px #0008;
+        opacity: 0;
+        animation-delay: 1.5s;
+        animation-name: spinnerFadeIn, spin;
+        animation-duration: 0.4s, 1s;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1), linear;
+        animation-fill-mode: forwards, infinite;
+      }
+      @keyframes spinnerFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .splash-hide {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      /* PWA Banner, etc. are also unchanged */
+      #pwa-install-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(25, 25, 25, 0.95);
+        backdrop-filter: blur(20px);
+        padding: 12px 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+        z-index: 200;
+        transform: translateY(100%);
+        transition: transform 0.3s ease-out;
+      }
+      #pwa-install-banner.show {
+        transform: translateY(0);
+      }
+      #pwa-install-banner .banner-content {
+        max-width: 480px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #ccc;
+        font-family: "Inter", sans-serif;
+      }
+      #pwa-install-banner .banner-text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+      #pwa-install-banner .banner-text i {
+        font-size: 18px;
+        color: #e8772e;
+      }
+      #pwa-install-banner .banner-actions button {
+        background: #e8772e;
+        border: none;
+        color: white;
+        padding: 6px 12px;
+        margin-left: 8px;
+        font-size: 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      #pwa-install-banner .banner-actions button#pwa-install-close {
+        background: transparent;
+        color: #888;
+        font-size: 18px;
+        margin-left: 4px;
+      }
+      #pwa-install-banner .banner-actions button:hover {
+        opacity: 0.8;
+      }
+      #pwa-install-banner.hidden {
+        display: none;
+      }
+      @media (max-width: 900px) and (orientation: landscape) {
+        .bottom-nav {
+          transform: translateY(100%);
+          opacity: 0;
+          pointer-events: none;
+          transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        /* Adjust iframe to use full height when navbar is hidden */
+        #contentFrame {
+          height: 100vh;
+          padding-bottom: 0;
+        }
+      }
+
+      /* Ensure navbar shows again when returning to portrait */
+      @media (max-width: 699px) and (orientation: portrait) {
+        .bottom-nav {
+          transform: translateY(0);
+          opacity: 1;
+          pointer-events: auto;
+          transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+      }
+
+      /* 
+        ==================================================================
+        DESKTOP REWORK (min-width: 700px)
+        ==================================================================
+        */
+      @media (min-width: 700px) {
+        /* --- 1. FULL-SCREEN IFRAME SETUP --- */
+        /* Makes the iframe fill the entire screen, acting as the background content layer */
+        #contentFrame {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          z-index: 1; /* Sits behind the nav bar */
+        }
+
+        /* --- 2. PROFESSIONAL FLOATING NAV BAR --- */
+        .bottom-nav {
+          /* Positioning & Sizing */
+          position: fixed;
+          left: 50%;
+          bottom: 32px;
+          transform: translateX(-50%);
+          width: auto; /* Width is determined by its content */
+          height: 68px; /* Slightly smaller for a sleeker look */
+          padding: 0 12px; /* Padding around the items */
+          z-index: 1000; /* Stays on top of all content */
+          display: flex;
+          align-items: center;
+          gap: 8px; /* Space between nav items */
+
+          /* Professional Styling */
+          background: rgba(28, 28, 30, 0.75); /* Darker, more premium glass */
+          border-radius: 34px; /* Fully rounded pill shape */
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(24px) saturate(1.8);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3),
+            /* Main shadow for depth */ inset 0 1px 1px
+              rgba(255, 255, 255, 0.05); /* Inner highlight for glass effect */
+
+          /* Reset Mobile Styles */
+          padding-bottom: 0;
+        }
+
+        /* --- 3. REFINED NAV ITEMS --- */
+        .nav-item {
+          /* Reset & Base Styles */
+          flex-direction: row; /* Icon and text side-by-side */
+          flex-grow: 0;
+          flex-shrink: 0;
+          height: 52px;
+          padding: 0 16px; /* Padding inside each item */
+          margin: 0;
+          border-radius: 26px; /* Fully rounded pill */
+          color: #aeb1b8;
+          font-size: 14px;
+          overflow: hidden;
+
+          /* Smooth Transitions */
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-item .nav-icon {
+          font-size: 20px;
+          margin-right: 0; /* Will be set on the text span */
+          margin-bottom: 0;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-item .nav-text {
+          display: block;
+          position: relative;
+          font-weight: 600;
+          white-space: nowrap;
+          opacity: 0; /* Hidden by default */
+          width: 0; /* Collapsed by default */
+          margin-left: 0;
+          color: #ffffff;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* -- Inactive Item Hover State -- */
+        .nav-item:not(.active):hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: #ffffff;
+          transform: translateY(-2px); /* Subtle lift */
+        }
+
+        /* -- Active Item State -- */
+        .nav-item.active {
+          background: #e8772e;
+          color: #ffffff;
+          transform: translateY(0);
+          box-shadow: 0 4px 16px rgba(232, 119, 46, 0.4);
+        }
+
+        .nav-item.active .nav-icon {
+          transform: scale(1.05);
+        }
+
+        .nav-item.active .nav-text {
+          opacity: 1;
+          width: auto; /* Expand to fit text */
+          margin-left: 10px; /* Space between icon and text */
+        }
+
+        /* Remove mobile-specific pseudo-elements */
+        .nav-item::before,
+        .nav-item::after {
+          display: none;
+        }
+      }
+      @media (max-width: 699px) {
+        #contentFrame {
+          height: calc(100vh - 90px) !important;
+          padding-bottom: 0;
+        }
+
+        .app-container {
+          height: 100vh;
+          overflow: hidden;
+        }
+      }
+
+      /* Desktop iframe adjustments */
+      @media (min-width: 700px) {
+        #contentFrame {
+          height: 100vh;
+          padding-bottom: 0;
+        }
+      }
+
+      /* Landscape mode adjustments for mobile */
+      @media (max-width: 900px) and (orientation: landscape) {
+        #contentFrame {
+          height: 100vh !important;
+          padding-bottom: 0;
+        }
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0; /* top:0; right:0; bottom:0; left:0; */
+        background: var(--color-bg-overlay);
+        backdrop-filter: blur(8px);
+        display: flex;
+        place-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-medium);
+        z-index: 10_000;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .modal-content {
+        background: var(--color-bg-modal);
+        padding: var(--spacing-lg) var(--spacing-lg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        text-align: center;
+        max-width: 28rem; /* ~ 450px */
+        width: 100%;
+        transform: scale(0.95);
+        transition: transform var(--transition-medium);
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: scale(1);
+      }
+
+      .modal-content h2 {
+        margin-bottom: var(--spacing);
+        font-size: 1.75rem;
+        font-weight: 400;
+        color: var(--text-primary);
+        font-family: "Bitcount Grid Single";
+      }
+
+      .modal-content p {
+        margin-bottom: var(--spacing-lg);
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--text-secondary);
+        font-family: Tahoma;
+      }
+
+      .modal-content a {
+        color: var(--accent);
+        font-weight: 600;
+        text-decoration: none;
+        transition: color var(--transition-fast);
+      }
+      .modal-content a:hover,
+      .modal-content a:focus {
+        color: var(--accent-light);
+        outline: none;
+      }
+
+      /* Input + button */
+      .ip-input-container {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .ip-input {
+        width: 90%;
+        background: var(--color-bg-input);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        padding: var(--spacing) calc(var(--spacing) * 1.25);
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        text-align: center;
+        outline: none;
+        transition: box-shadow var(--transition-fast),
+          border-color var(--transition-fast);
+      }
+
+      .ip-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.25rem var(--accent-fade);
+      }
+
+      /* Connect button */
+      .connect-button {
+        display: block;
+        width: 100%;
+        padding: var(--spacing) 0;
+        background: var(--accent);
+        border: none;
+        border-radius: var(--radius);
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff;
+        cursor: pointer;
+        transition: background var(--transition-fast),
+          box-shadow var(--transition-fast);
+      }
+
+      .connect-button:hover {
+        background: var(--accent-light);
+      }
+
+      .connect-button:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.25rem var(--accent-fade);
+      }
+
+      /* Status text */
+      .status-indicator {
+        margin-top: var(--spacing-sm);
+        font-size: 0.9rem;
+        min-height: 1.25rem;
+        color: var(--text-secondary);
+        transition: color var(--transition-fast);
+      }
+
+      .status-indicator.connecting {
+        color: var(--text-secondary);
+      }
+      .status-indicator.connected {
+        color: var(--status-ok);
+      }
+      .status-indicator.error {
+        color: var(--status-error);
+      }
+      /* --- IFRAME POPUP STYLES --- */
+      #iframe-popup-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 15000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #iframe-popup-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      #iframe-popup-overlay .popup-content-wrapper {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        background: #111;
+        border: none;
+        transform: translateY(30px);
+        opacity: 0;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Ensures content stays within wrapper */
+      }
+
+      #iframe-popup-overlay.visible .popup-content-wrapper {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .popup-header {
+        flex-shrink: 0;
+        height: 44px;
+        background-color: #1c1c1e;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 10px;
+        position: relative;
+        z-index: 20;
+      }
+
+      #iframe-popup-overlay #popup-iframe {
+        width: 100%;
+        flex-grow: 1; /* Takes up remaining space */
+        border: none;
+      }
+
+      #iframe-popup-overlay .popup-close {
+        /* Resetting old styles */
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        color: #8e8e93;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        font-family: "Inter", sans-serif;
+        font-weight: 500;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      #iframe-popup-overlay .popup-close:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: none; /* Override old hover transform */
+      }
+
+      /* --- NEW: LIST MANAGER POPUP STYLES --- */
+      #list-manager-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 16000;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end; /* Align to bottom */
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #list-manager-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      #list-manager-overlay .list-manager-wrapper {
+        width: 100%;
+        max-width: 500px; /* Max width for larger screens */
+        height: 75vh; /* 75% of the viewport height */
+        max-height: 800px; /* Max height */
+        background: #18181b;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #list-manager-overlay.visible .list-manager-wrapper {
+        transform: translateY(0);
+      }
+
+      #list-manager-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      /* --- NEW: Custom Toast Notification --- */
+      #toast-container {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        pointer-events: none;
+      }
+
+      .toast-message {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 280px;
+        max-width: 400px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+        background: rgba(40, 40, 40, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(16px) saturate(1.8);
+        -webkit-backdrop-filter: blur(16px) saturate(1.8);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+        animation: toast-in 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+      }
+
+      .toast-message.hiding {
+        animation: toast-out 0.4s cubic-bezier(0.55, 0.055, 0.675, 0.19)
+          forwards;
+      }
+
+      @keyframes toast-in {
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes toast-out {
+        from {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-20px) scale(0.95);
+        }
+      }
+
+      .toast-message .toast-icon {
+        font-size: 1.2rem;
+      }
+      .toast-message.success .toast-icon {
+        color: #34c759;
+      }
+      .toast-message.error .toast-icon {
+        color: #ff3b30;
+      }
+      .toast-message.info .toast-icon {
+        color: #007aff;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- SPLASH SCREEN WITH LOGO AND CINEMATIC ANIMATION -->
+    <div id="splash-screen">
+      <div class="splash-flash"></div>
+      <div class="logo-anim-container">
+        <!-- SVG LOGO: Provided image, color preserved -->
+        <svg
+          id="splash-logo"
+          width="120"
+          height="120"
+          viewBox="0 0 400 400"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect x="59" y="53" width="282" height="37" fill="#DE541E" />
+          <rect x="59" y="115" width="282" height="37" fill="#DE541E" />
+          <path d="M327 348H280.904L234 79H280.904L327 348Z" fill="#DE541E" />
+          <path d="M78 348H124.096L171 79H124.096L78 348Z" fill="#DE541E" />
+          <rect
+            x="171"
+            y="288.857"
+            width="59"
+            height="59.1429"
+            fill="#DE541E"
+          />
+          <ellipse
+            cx="200.5"
+            cy="288.31"
+            rx="29.5"
+            ry="32.3095"
+            fill="#DE541E"
+          />
+        </svg>
+      </div>
+      <div class="splash-spinner"></div>
+    </div>
+
+    <div class="app-container">
+      <iframe id="contentFrame" src="" title="Content Area"></iframe>
+
+      <nav class="bottom-nav">
+        <a href="#" class="nav-item" data-src="anime.html">
+          <span class="nav-icon"><i class="fas fa-film"></i></span>
+          <span class="nav-text">ANIME</span>
+        </a>
+        <a href="#" class="nav-item" data-src="manga.html">
+          <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+          <span class="nav-text">MANGA</span>
+        </a>
+        <a href="#" class="nav-item" data-src="search.html">
+          <span class="nav-icon"><i class="fas fa-search"></i></span>
+          <span class="nav-text">SEARCH</span>
+        </a>
+        <a href="#" class="nav-item" data-src="library.html">
+          <span class="nav-icon"><i class="fas fa-bookmark"></i></span>
+          <span class="nav-text">LIBRARY</span>
+        </a>
+        <a href="#" class="nav-item" data-src="settings.html">
+          <span class="nav-icon"><i class="fas fa-cog"></i></span>
+          <span class="nav-text">SETTINGS</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- PWA Install Banner -->
+    <div id="pwa-install-banner" class="hidden">
+      <div class="banner-content">
+        <div class="banner-text">
+          <i class="fas fa-download"></i>
+          <span id="pwa-install-message"
+            >Install Animex for a better experience</span
+          >
+        </div>
+        <div class="banner-actions">
+          <button id="pwa-install-btn">Install</button>
+          <button id="pwa-install-close"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTRO OVERLAY (hidden by default) -->
+    <div
+      id="intro-overlay"
+      style="
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #111;
+      "
+    >
+      <iframe
+        id="intro-iframe"
+        src="intro.html"
+        style="width: 100vw; height: 100vh; border: none; background: #111"
+      ></iframe>
+    </div>
+
+    <!-- Server Connection Modal -->
+    <div id="server-modal" class="modal-overlay active">
+      <div class="modal-content">
+        <h2>Extension Server Not Connected</h2>
+        <p>
+          Please enter the IP address of your Animex extension server.
+          <a
+            href="https://github.com/Animex-App/Extension-Servers"
+            id="learn-more-link"
+            >Learn More</a
+          >
+        </p>
+        <div class="ip-input-container">
+          <input
+            type="text"
+            id="ip-input"
+            class="ip-input"
+            placeholder="e.g., 192.168.1.100"
+          />
+        </div>
+        <button id="connect-btn" class="connect-button">Connect</button>
+        <div id="status-indicator" class="status-indicator"></div>
+      </div>
+    </div>
+
+    <!-- Fullscreen Iframe Popup -->
+    <div id="iframe-popup-overlay">
+      <div class="popup-content-wrapper">
+        <div class="popup-header">
+          <button id="popup-close-btn" class="popup-close">×</button>
+        </div>
+        <iframe id="popup-iframe" src="" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <!-- NEW: List Manager Popup -->
+    <div id="list-manager-overlay">
+      <div class="list-manager-wrapper">
+        <iframe id="list-manager-iframe" src="lists.html"></iframe>
+      </div>
+    </div>
+
+    <!-- NEW: Toast Container -->
+    <div id="toast-container"></div>
+
+    <script>
+      let deferredPrompt;
+      // Get URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const skipIntro = urlParams.get("skipIntro") === "true";
+
+      // Show intro only if skipIntro is false and other conditions are met
+      if (!skipIntro && shouldShowIntro()) {
+        showIntroCover();
+      }
+
+      // Check if the app is running as a PWA
+      function isInStandaloneMode() {
+        return (
+          window.matchMedia("(display-mode: standalone)").matches ||
+          window.navigator.standalone === true
+        );
+      }
+
+      // Should we show the intro?
+      function shouldShowIntro() {
+        // Check skipIntro parameter first - this should be the definitive check
+        const urlParams = new URLSearchParams(window.location.search);
+        const skipIntroParam = urlParams.get("skipIntro") === "true";
+
+        if (skipIntroParam) return false;
+
+        // Only show intro if NOT in standalone mode AND on mobile
+        const isMobile =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          );
+        return !isInStandaloneMode() && isMobile;
+      }
+
+      // Show the intro overlay
+      function showIntroCover() {
+        if (skipIntro) return;
+        const intro = document.getElementById("intro-overlay");
+        if (intro) {
+          intro.style.display = "block";
+        }
+      }
+
+      // Show the install banner
+      function showBanner(message = "Install Animex for a better experience") {
+        if (isInStandaloneMode()) return;
+        const banner = document.getElementById("pwa-install-banner");
+        document.getElementById("pwa-install-message").textContent = message;
+        banner.classList.remove("hidden");
+        requestAnimationFrame(() => banner.classList.add("show"));
+      }
+
+      // Hide the banner
+      function hideBanner() {
+        const banner = document.getElementById("pwa-install-banner");
+        banner.classList.remove("show");
+        banner.addEventListener(
+          "transitionend",
+          () => {
+            banner.classList.add("hidden");
+          },
+          { once: true }
+        );
+      }
+
+      // Listen for beforeinstallprompt (Chrome / Android)
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showBanner(); // use default message
+      });
+
+      // DOM loaded: set up install buttons and intro logic
+      document.addEventListener("DOMContentLoaded", () => {
+        const installBtn = document.getElementById("pwa-install-btn");
+        const closeBtn = document.getElementById("pwa-install-close");
+
+        if (installBtn) {
+          installBtn.addEventListener("click", async () => {
+            hideBanner();
+            if (deferredPrompt) {
+              deferredPrompt.prompt();
+              const choice = await deferredPrompt.userChoice;
+              deferredPrompt = null;
+            }
+          });
+        }
+
+        if (closeBtn) {
+          closeBtn.addEventListener("click", hideBanner);
+        }
+
+        // Show intro cover only if not in PWA
+      });
+    </script>
+
+    <script>
+      // Audio setup for splash screen (mobile-compatible)
+      function playStartupSound() {
+        try {
+          // Create a simple startup sound using Web Audio API
+          const audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+
+          // Create a pleasant startup chime
+          const oscillator1 = audioContext.createOscillator();
+          const oscillator2 = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          // Connect the audio nodes
+          oscillator1.connect(gainNode);
+          oscillator2.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          // Set frequencies for a pleasant chord (C major)
+          oscillator1.frequency.setValueAtTime(
+            523.25,
+            audioContext.currentTime
+          ); // C5
+          oscillator2.frequency.setValueAtTime(
+            659.25,
+            audioContext.currentTime
+          ); // E5
+
+          // Set wave type for a softer sound
+          oscillator1.type = "sine";
+          oscillator2.type = "sine";
+
+          // Create a gentle fade-in and fade-out
+          gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+          gainNode.gain.linearRampToValueAtTime(
+            0.1,
+            audioContext.currentTime + 0.1
+          );
+          gainNode.gain.exponentialRampToValueAtTime(
+            0.01,
+            audioContext.currentTime + 0.8
+          );
+
+          // Start and stop the oscillators
+          oscillator1.start(audioContext.currentTime);
+          oscillator2.start(audioContext.currentTime);
+          oscillator1.stop(audioContext.currentTime + 0.8);
+          oscillator2.stop(audioContext.currentTime + 0.8);
+        } catch (error) {
+          console.log("Audio not supported or blocked:", error);
+        }
+      }
+
+      const serverModal = document.getElementById("server-modal");
+      const ipInput = document.getElementById("ip-input");
+      const connectBtn = document.getElementById("connect-btn");
+      const statusIndicator = document.getElementById("status-indicator");
+
+      async function checkServerStatus(ip, isDeployed = false) {
+        statusIndicator.textContent = "Connecting...";
+        statusIndicator.className = "status-indicator connecting";
+        const url = isDeployed ? '/identify' : `http://${ip}:7275/identify`;
+        
+        try {
+          const response = await fetch(url, {
+            method: "GET",
+            mode: isDeployed ? "same-origin" : "cors",
+            signal: AbortSignal.timeout(5000),
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.app === "Animex Extension API") {
+              statusIndicator.textContent = "Connected!";
+              statusIndicator.className = "status-indicator connected";
+              if (!isDeployed) {
+                localStorage.setItem("extension_server_ip", ip);
+              }
+              setTimeout(() => {
+                serverModal.classList.remove("active");
+              }, 1000);
+              return true;
+            }
+          }
+          throw new Error("Not a valid Animex server.");
+        } catch (error) {
+          console.error("Server connection error:", error);
+          statusIndicator.textContent = isDeployed 
+            ? "Connection to server failed. Please refresh."
+            : "Connection failed. Check IP and ensure server is running.";
+          statusIndicator.className = "status-indicator error";
+          return false;
+        }
+      }
+
+      connectBtn.addEventListener("click", () => {
+        const ip = ipInput.value.trim();
+        if (ip) {
+          checkServerStatus(ip, false);
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        function checkAccessToken() {
+          const accessToken = localStorage.getItem("currentProfileId");
+          if (!accessToken) {
+            window.location.href = "login.html";
+          }
+        }
+        // --- Cinematic splash ---
+        const splashScreen = document.getElementById("splash-screen");
+        setTimeout(() => {
+          splashScreen.classList.add("splash-hide");
+          setTimeout(() => {
+            splashScreen.style.display = "none";
+            checkAccessToken();
+            setInterval(checkAccessToken, 5000);
+
+            const isDeployed = window.location.protocol.startsWith('http');
+
+            if (isDeployed) {
+                serverModal.querySelector('.modal-content h2').textContent = "Connecting to Server";
+                serverModal.querySelector('.modal-content p').style.display = 'none';
+                serverModal.querySelector('.ip-input-container').style.display = 'none';
+                serverModal.querySelector('.connect-button').style.display = 'none';
+                checkServerStatus(null, true);
+            } else {
+                const savedIp = localStorage.getItem("extension_server_ip");
+                if (savedIp) {
+                    ipInput.value = savedIp;
+                    checkServerStatus(savedIp, false).then((connected) => {
+                        if (!connected) {
+                            serverModal.classList.add("active");
+                        }
+                    });
+                } else {
+                    serverModal.classList.add("active");
+                }
+            }
+
+            document.querySelector(".app-container").style.animation =
+              "fadeIn 0.5s ease-out forwards";
+
+            // --- Show intro overlay if needed (now properly checks skipIntro) ---
+            const accessToken = localStorage.getItem("currentProfileId");
+            if (shouldShowIntro() && !accessToken) {
+              const introOverlay = document.getElementById("intro-overlay");
+              const introIframe = document.getElementById("intro-iframe");
+              introOverlay.style.display = "block";
+              introIframe.src = "intro.html";
+              document.querySelector(".app-container").style.display = "none";
+              // Listen for message from intro.html to close overlay
+              window.addEventListener("message", function handleIntroMsg(e) {
+                if (e.data === "introDone") {
+                  introOverlay.style.display = "none";
+                  document.querySelector(".app-container").style.display = "";
+                  localStorage.setItem("introSeen", "1");
+                  window.removeEventListener("message", handleIntroMsg);
+                }
+              });
+              return;
+            }
+          }, 600);
+        }, 2200);
+
+        // Enhanced navigation with smooth transitions
+        const navItems = document.querySelectorAll(".bottom-nav .nav-item");
+        const contentFrame = document.getElementById("contentFrame");
+        const defaultSrc = "anime.html";
+        const bottomNav = document.querySelector(".bottom-nav");
+
+        function setActiveTab(selectedItem) {
+          navItems.forEach((item) => {
+            item.classList.remove("active");
+          });
+          selectedItem.classList.add("active");
+
+          // Morphing animation for desktop
+          if (window.innerWidth >= 700) {
+            bottomNav.classList.add("morphing");
+            setTimeout(() => bottomNav.classList.remove("morphing"), 400);
+          }
+
+          if (contentFrame.src !== selectedItem.dataset.src) {
+            contentFrame.style.opacity = "0.7";
+            const profileId = localStorage.getItem("currentProfileId");
+            let newSrc = selectedItem.dataset.src;
+            if (profileId) {
+              newSrc = `${selectedItem.dataset.src}?profileId=${profileId}`;
+            }
+            contentFrame.src = newSrc;
+            contentFrame.addEventListener(
+              "load",
+              () => {
+                contentFrame.style.opacity = "1";
+                // Inject bottom padding for scroll safe zone (desktop only)
+                try {
+                  const iframeDoc =
+                    contentFrame.contentDocument ||
+                    contentFrame.contentWindow.document;
+                  if (iframeDoc && iframeDoc.body && window.innerWidth >= 700) {
+                    iframeDoc.body.style.paddingBottom = "120px";
+                  } else if (iframeDoc && iframeDoc.body) {
+                    iframeDoc.body.style.paddingBottom = "90px";
+                  }
+                } catch (e) {
+                  // Cross-origin or other error, ignore
+                }
+              },
+              { once: true }
+            );
+          }
+
+          if ("vibrate" in navigator) {
+            navigator.vibrate(20);
+          }
+        }
+
+        navItems.forEach((item) => {
+          item.addEventListener("click", (e) => {
+            e.preventDefault();
+            setActiveTab(item);
+
+            // Enable audio context on first user interaction (required for mobile)
+            if (window.AudioContext || window.webkitAudioContext) {
+              const audioContext = new (window.AudioContext ||
+                window.webkitAudioContext)();
+              if (audioContext.state === "suspended") {
+                audioContext.resume();
+              }
+            }
+          });
+        });
+
+        // --- Server Connection Modal Logic ---
+
+        // Set initial active tab
+        const initialActiveItem =
+          document.querySelector(`.nav-item[data-src="${defaultSrc}"]`) ||
+          navItems[0];
+        if (initialActiveItem) {
+          setActiveTab(initialActiveItem);
+        }
+      });
+
+      // Add CSS for app entrance animation
+      const style = document.createElement("style");
+      style.textContent = `
+            .app-container {
+                opacity: 0;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            #contentFrame {
+                transition: opacity 0.3s ease;
+            }
+        `;
+      document.head.appendChild(style);
+
+      // --- IFRAME POPUP LOGIC ---
+      const popupOverlay = document.getElementById("iframe-popup-overlay");
+      const popupIframe = document.getElementById("popup-iframe");
+      const popupCloseBtn = document.getElementById("popup-close-btn");
+
+      /**
+       * Opens the fullscreen iframe popup.
+       * This function is exposed to child iframes via window.parent.openPopup
+       * @param {string} url The URL to load in the iframe.
+       */
+      function openPopup(url) {
+        if (!url || !popupOverlay || !popupIframe) return;
+
+        popupIframe.src = url; // Set the source
+        popupOverlay.classList.add("visible"); // Make it visible and trigger animation
+      }
+
+      /**
+       * Closes the fullscreen iframe popup.
+       */
+      function closePopup() {
+        if (!popupOverlay || !popupIframe) return;
+
+        popupOverlay.classList.remove("visible"); // Hide it and trigger animation
+
+        // Optional: For performance, clear the iframe's src after the transition
+        popupOverlay.addEventListener(
+          "transitionend",
+          () => {
+            popupIframe.src = "about:blank";
+          },
+          { once: true }
+        ); // Use { once: true } to auto-remove the listener
+      }
+
+      // Attach the open function to the window object to make it globally accessible to child iframes.
+      window.openPopup = openPopup;
+
+      // Event listener for the close button
+      if (popupCloseBtn) {
+        popupCloseBtn.addEventListener("click", closePopup);
+      }
+
+      // --- NEW: LIST MANAGER LOGIC ---
+      const listManagerOverlay = document.getElementById(
+        "list-manager-overlay"
+      );
+      const listManagerIframe = document.getElementById("list-manager-iframe");
+
+      /**
+       * Opens the list manager popup and sends item data to it.
+       * @param {object} data The item data to add to a list.
+       */
+      function openListManager(data) {
+        if (!listManagerOverlay || !listManagerIframe) return;
+
+        listManagerOverlay.classList.add("visible");
+
+        // Use a timeout to ensure the iframe is ready to receive messages
+        setTimeout(() => {
+          listManagerIframe.contentWindow.postMessage(
+            { type: "manage-item", data: data },
+            "*"
+          );
+        }, 100);
+      }
+
+      /**
+       * Closes the list manager popup.
+       */
+      function closeListManager() {
+        if (!listManagerOverlay) return;
+        listManagerOverlay.classList.remove("visible");
+      }
+
+      // Expose functions to child iframes
+      window.openListManager = openListManager;
+      window.closeListManager = closeListManager;
+
+      // Listen for 'close' messages from the list manager iframe
+      window.addEventListener("message", (event) => {
+        if (event.data === "close-list-manager") {
+          closeListManager();
+        }
+      });
+
+      // Also allow closing by clicking the overlay background
+      listManagerOverlay.addEventListener("click", (event) => {
+        if (event.target === listManagerOverlay) {
+          closeListManager();
+        }
+      });
+
+      // --- NEW: Toast Notification Logic ---
+      function showToast(message, type = "info", duration = 4000) {
+        const container = document.getElementById("toast-container");
+        if (!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = `toast-message ${type}`;
+
+        let iconClass = "fas fa-info-circle";
+        if (type === "success") iconClass = "fas fa-check-circle";
+        if (type === "error") iconClass = "fas fa-exclamation-triangle";
+
+        toast.innerHTML = `
+              <i class="toast-icon ${iconClass}"></i>
+              <span class="toast-text">${message}</span>
+          `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.classList.add("hiding");
+          toast.addEventListener("animationend", () => {
+            toast.remove();
+          });
+        }, duration);
+      }
+      window.showToast = showToast;
+
+      // Service Worker Registration
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then(() => console.log("Service Worker registered"))
+          .catch((error) =>
+            console.error("Service Worker registration failed:", error)
+          );
+      }
+
+      // --- CACHE & SETTINGS SYNC LOGIC ---
+      window.addEventListener("message", (event) => {
+        if (!event.data || !event.data.action) {
+          if (event.data === "close-list-manager") {
+            closeListManager();
+          }
+          return;
+        }
+
+        switch (event.data.action) {
+          case "clearPageCache":
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker.ready
+                .then((registration) => {
+                  if (registration.active) {
+                    registration.active.postMessage({
+                      action: "clear_page_cache",
+                    });
+                  } else {
+                    showToast(
+                      "No active service worker found. Cannot clear cache.",
+                      "error"
+                    );
+                  }
+                })
+                .catch((error) => {
+                  console.error("Service Worker not ready:", error);
+                  showToast(
+                    "Service worker not ready. Cannot clear cache.",
+                    "error"
+                  );
+                });
+            } else {
+              showToast(
+                "Service workers are not supported in this browser.",
+                "error"
+              );
+            }
+            break;
+
+          case "clearAllData":
+            console.log("Clearing all site data...");
+            // Clear storage first
+            localStorage.clear();
+            sessionStorage.clear();
+
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker
+                .getRegistrations()
+                .then(function (registrations) {
+                  const unregisterPromises = registrations.map((reg) =>
+                    reg.unregister()
+                  );
+                  return Promise.all(unregisterPromises);
+                })
+                .then(() => {
+                  return caches
+                    .keys()
+                    .then((keys) =>
+                      Promise.all(keys.map((key) => caches.delete(key)))
+                    );
+                })
+                .then(() => {
+                  showToast(
+                    "All site data has been cleared. The application will now reload.",
+                    "success"
+                  );
+                  setTimeout(() => window.location.reload(), 1500);
+                })
+                .catch((err) => {
+                  console.error("Error during full data clear:", err);
+                  showToast(
+                    "An error occurred while clearing data. Please try clearing your browser data manually.",
+                    "error"
+                  );
+                });
+            } else {
+              // Fallback for browsers without SW support
+              caches
+                .keys()
+                .then((keys) =>
+                  Promise.all(keys.map((key) => caches.delete(key)))
+                )
+                .then(() => {
+                  showToast(
+                    "All site data has been cleared. The application will now reload.",
+                    "success"
+                  );
+                  setTimeout(() => window.location.reload(), 1500);
+                });
+            }
+            break;
+        }
+      });
+
+      // Listen for messages back from the SW
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.addEventListener("message", (event) => {
+          if (event.data && event.data.action === "cacheCleared") {
+            if (event.data.type === "page") {
+              showToast(
+                "Cached pages and resources have been cleared. Reloading...",
+                "success"
+              );
+              setTimeout(() => window.location.reload(), 1500);
+            }
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

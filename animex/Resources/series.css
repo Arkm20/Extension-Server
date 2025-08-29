@@ -1,0 +1,981 @@
+:root {
+    --brand-accent: #ff9500;
+    --background-primary: #000000;
+    --background-secondary: #141414;
+    --background-tertiary: #1f1f1f;
+    --text-primary: #ffffff;
+    --text-secondary: #e5e5e5;
+    --text-muted: #a0a0a0;
+    --border-color: #2a2a2a;
+    --shadow-color: rgba(0, 0, 0, 0.25); /* Adding shadow color for consistency */
+    --transition-duration: 0.2s;
+    --border-radius: 8px; /* Global border-radius */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth; /* Add smooth scrolling */
+}
+
+body {
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5; /* Improved readability */
+}
+
+/* Custom Dark Scrollbar */
+::-webkit-scrollbar {
+    width: 8px; /* Slightly thinner scrollbar */
+}
+::-webkit-scrollbar-track {
+    background: var(--background-secondary);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* --- APP STRUCTURE --- */
+.app-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex; /* Use flexbox for layout */
+    flex-direction: column;
+}
+
+/* --- HEADER & HERO SECTION --- */
+.series-hero-section {
+    position: relative;
+    height: 65vh;
+    min-height: 400px;
+    background-size: cover;
+    background-position: center 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2rem 4%;
+    box-shadow: 0 10px 30px -15px var(--shadow-color); /* Use consistent shadow */
+    border-bottom: 1px solid var(--border-color); /* Subtle border for separation */
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0) 80%);
+    z-index: 1;
+}
+
+.series-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 50%;
+    animation: fadeInUp 0.5s ease-out; /* Subtle animation */
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.series-title-text {
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    line-height: 1.1;
+    margin-bottom: 0.5rem; /* Add some spacing below title */
+}
+
+.hero-action-btn {
+    background: transparent;
+    border: 1px solid var(--brand-accent);
+    width: auto;
+    color: var(--brand-accent);
+    height: 44px;
+    border-radius: var(--border-radius);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-duration) ease, transform var(--transition-duration) ease;
+    margin-top: 1rem;
+    padding: 10px 10px;
+}
+
+.hero-action-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.hero-action-btn i {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-duration) ease, transform var(--transition-duration) ease;
+}
+
+.back-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+}
+
+/* --- MAIN CONTENT & SERIES DETAILS --- */
+.main-content {
+    padding: 2rem 4%;
+    background-color: var(--background-primary);
+    flex-grow: 1; /* Take up remaining space */
+}
+
+.series-details-section {
+    max-width: 1400px;
+    margin: 0 auto 2rem;
+}
+
+.series-meta-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+/* ****** START: COLLAPSIBLE DETAILS CSS ****** */
+.details-content-wrapper {
+    position: relative;
+    max-height: 450px; /* Adjust this value to control collapsed height */
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0.0, 0.2, 1); /* More natural easing */
+}
+.details-content-wrapper::after { /* The fade-out effect */
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background: linear-gradient(to top, var(--background-primary) 20%, transparent);
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.details-content-wrapper.expanded {
+    max-height: 5000px; /* Large enough value to fit any content */
+}
+.details-content-wrapper.expanded::after {
+    opacity: 0;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.show-more-container {
+    text-align: center;
+    padding-top: 1rem;
+    border-bottom: 1px solid var(--border-color); /* Less obtrusive border */
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+}
+
+.show-more-btn {
+    background: var(--background-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-duration) ease;
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+.show-more-btn:hover {
+    background-color: #333;
+    border-color: #555;
+}
+.show-more-btn i {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+.details-content-wrapper.expanded + .show-more-container .show-more-btn i {
+    transform: rotate(180deg);
+}
+ /* ****** END: COLLAPSIBLE DETAILS CSS ****** */
+
+#series-score {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+#series-synopsis {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+#series-info-additional {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+#series-info-additional strong {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.series-genres, .series-studios, .series-producers {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+.series-genres strong, .series-studios strong, .series-producers strong {
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-right: 8px;
+}
+.series-genres span, .series-studios span, .series-producers span {
+    display: inline-block;
+    margin: 4px 4px 0 0;
+    padding: 4px 10px;
+    background-color: var(--background-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    transition: background-color var(--transition-duration) ease;
+}
+.series-genres span:hover, .series-studios span:hover, .series-producers span:hover {
+    background-color: #333;
+}
+
+/* ****** START: TABS SYSTEM CSS ****** */
+.tabs-section {
+    margin-top: 3rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tabs-container {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border-color); /* Less obtrusive border */
+    margin-bottom: 2rem;
+}
+
+.tab-btn {
+    padding: 1rem 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: color var(--transition-duration) ease;
+}
+
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--brand-accent);
+    transform: scaleX(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); /* More natural easing */
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--text-primary);
+}
+.tab-btn.active::after {
+    transform: scaleX(1);
+}
+
+.tab-panel {
+    display: none;
+    animation: fadeIn 0.3s ease-out; /* Subtle animation */
+}
+.tab-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ****** END: TABS SYSTEM CSS ****** */
+
+
+/* --- EPISODE LIST --- */
+.episode-list-section {
+    /* No longer a primary section, just a container inside a tab */
+}
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color); /* Less obtrusive border */
+    padding-bottom: 10px;
+}
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.thumbnail-toggle-btn {
+    background-color: var(--background-tertiary);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--border-radius);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-duration) ease;
+}
+.thumbnail-toggle-btn:hover {
+    color: var(--text-secondary);
+    border-color: #444;
+}
+.thumbnail-toggle-btn.active {
+    color: var(--background-primary);
+    background-color: var(--brand-accent);
+    border-color: var(--brand-accent);
+}
+
+/* ****** START: LOADING BAR CSS ****** */
+.episodes-loader {
+    width: 100%;
+    height: 4px;
+    background-color: var(--background-tertiary);
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    position: relative;
+    display: none; /* Hidden by default */
+}
+
+.episodes-loader::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, var(--brand-accent), transparent);
+    animation: loading-shimmer 1.5s infinite linear;
+}
+
+@keyframes loading-shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+/* ****** END: LOADING BAR CSS ****** */
+
+.episode-list {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: var(--background-secondary);
+    box-shadow: 0 2px 8px var(--shadow-color); /* Subtle shadow */
+}
+.episode-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color var(--transition-duration) ease;
+    cursor: pointer;
+}
+.episode-item:last-child {
+    border-bottom: none;
+}
+.episode-item:hover {
+    background-color: var(--background-tertiary);
+}
+
+.episode-thumbnail {
+    flex-shrink: 0;
+    width: 120px;
+    height: 68px;
+    overflow: hidden;
+    border-radius: 6px;
+    background-color: var(--background-tertiary);
+    transition: width 0.3s ease;
+}
+.episode-thumbnail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.episode-thumbnail-img:hover {
+    transform: scale(1.1); /* Add zoom effect */
+}
+
+.episode-list.thumbnails-hidden .episode-thumbnail {
+    width: 0;
+    margin-right: -1.5rem; /* collapse gap */
+}
+.episode-list.thumbnails-hidden .episode-item {
+    gap: 1.5rem;
+}
+
+.episode-number {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+    transition: color var(--transition-duration) ease;
+}
+
+.episode-info {
+    flex-grow: 1;
+    min-width: 0; /* Fix for flexbox text overflow */
+}
+.episode-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.episode-title-romanji {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- WATCHED EPISODE STYLES --- */
+.episode-item.watched {
+    background: rgba(255, 149, 0, 0.05);
+    border-left: 4px solid var(--brand-accent);
+    padding-left: calc(1.5rem - 4px); /* Adjust padding to account for border */
+}
+.episode-item.watched .episode-number {
+    color: var(--brand-accent);
+}
+.episode-item.watched:hover {
+    background: rgba(255, 149, 0, 0.1);
+}
+
+.episode-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Adjust gap between buttons */
+    margin-left: auto; /* Pushes buttons to the right */
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+.episode-action-icon {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-duration), color var(--transition-duration);
+}
+
+.episode-action-icon:hover {
+    background-color: var(--background-tertiary);
+    color: var(--brand-accent);
+}
+
+.watched-indicator {
+    color: var(--brand-accent);
+    font-size: 0.9em;
+}
+
+/* --- PAGINATION --- */
+.episodes-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+.episodes-pagination button {
+    background-color: var(--background-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-duration) ease, color var(--transition-duration) ease;
+}
+.episodes-pagination button:hover:not(:disabled) {
+    background-color: var(--brand-accent);
+    color: var(--background-primary);
+    border-color: var(--brand-accent);
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+.episodes-pagination button:disabled {
+    background-color: #1a1a1a;
+    color: #555;
+    cursor: not-allowed;
+    border-color: #222;
+    opacity: 0.7;
+}
+.episodes-pagination span {
+    color: var(--text-muted);
+}
+
+/* ****** START: RELATED & RECOMMENDATIONS CSS ****** */
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+}
+
+.recommendation-card {
+    background-color: var(--background-secondary);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: transform var(--transition-duration) ease, box-shadow var(--transition-duration) ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+.recommendation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px var(--shadow-color);
+}
+
+.recommendation-card-img-container {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background-color: var(--background-tertiary);
+    overflow: hidden;
+}
+
+.recommendation-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-duration) ease;
+}
+.recommendation-card:hover .recommendation-card-img {
+    transform: scale(1.1);
+}
+
+.recommendation-card-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.75rem;
+    flex-grow: 1;
+    line-height: 1.4;
+}
+
+.related-card {
+    display: flex;
+    gap: 1rem;
+    background-color: var(--background-secondary);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    text-decoration: none;
+    transition: background-color var(--transition-duration) ease, transform var(--transition-duration) ease;
+}
+.related-card:hover {
+    background-color: var(--background-tertiary);
+    transform: translateY(-2px); /* Subtle lift on hover */
+}
+
+.related-card-img-container {
+    flex-shrink: 0;
+    width: 80px;
+    aspect-ratio: 2/3;
+    background-color: var(--background-tertiary);
+    overflow: hidden;
+}
+.related-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.related-card-info {
+    flex-grow: 1;
+    padding: 1rem 1rem 1rem 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0; /* Fix flexbox overflow */
+}
+.related-card-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.related-card-tag {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: var(--background-primary);
+    background-color: var(--brand-accent);
+    padding: 4px 8px;
+    border-radius: 4px;
+    align-self: flex-start;
+}
+
+.info-message {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ****** END: RELATED & RECOMMENDATIONS CSS ****** */
+
+
+/* --- RESPONSIVE ADJUSTMENTS (MOBILE FIRST) --- */
+@media (max-width: 768px) {
+    .series-details-section {
+        /* No longer a grid */
+    }
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+    .series-hero-content {
+        max-width: 100%;
+    }
+    .main-content, .series-hero-section {
+        padding: 1.5rem 5%;
+    }
+    .episode-item {
+        padding: 0.75rem 1rem;
+        gap: 1rem;
+    }
+    .episode-title {
+        font-size: 1rem;
+    }
+    .episode-number {
+        font-size: 1.25rem;
+    }
+    .episode-thumbnail {
+        width: 90px;
+        height: 51px;
+    }
+    .tab-btn {
+        font-size: 1.1rem;
+    }
+    .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 1rem;
+    }
+    .related-card-title {
+        font-size: 1rem;
+    }
+}
+
+/* --- USER-PROVIDED STYLES (INTEGRATED & THEMED) --- */
+
+/* --- EPISODE POPUP OVERLAY --- */
+.episode-popup-overlay {
+    position: fixed;
+    z-index: 9999;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+.episode-popup-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.episode-popup-content {
+    position: relative;
+    width: clamp(300px, 95vw, 1400px);
+    height: auto;
+    aspect-ratio: 16 / 9;
+    background: var(--background-primary);
+    border-radius: 12px;
+    box-shadow: 0 10px 50px var(--shadow-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); /* More natural easing */
+}
+.episode-popup-overlay.active .episode-popup-content {
+    transform: scale(1);
+}
+
+.episode-popup-back {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 2;
+    font-size: 1.2em;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--transition-duration), transform var(--transition-duration);
+}
+.episode-popup-back:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.episode-popup-content iframe {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: var(--background-primary);
+}
+
+@media (max-width: 900px) {
+    .episode-popup-content {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        aspect-ratio: unset;
+    }
+}
+/* Add these styles to the existing <style> section */
+.trailer-section {
+    /* margin-top is handled by details-grid gap */
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.trailer-player-container {
+    background-color: var(--background-secondary);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.trailer-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.trailer-title i {
+    color: var(--brand-accent);
+}
+
+#trailer-player {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: var(--background-tertiary);
+    /* Ensure proper aspect ratio on all devices */
+    min-height: 200px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+.no-trailer-message {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Mobile-specific trailer improvements */
+@media (max-width: 768px) {
+    .trailer-player-container {
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 8px;
+    }
+
+    .trailer-title {
+        font-size: 1.3rem;
+    }
+
+    #trailer-player {
+        border-radius: 6px;
+        min-height: 180px;
+    }
+
+    /* Ensure YouTube iframe is touch-friendly on mobile */
+    #trailer-player iframe {
+        min-height: 200px;
+    }
+}
+
+/* Improve touch targets for mobile */
+@media (max-width: 480px) {
+    .trailer-player-container {
+        margin: 0.5rem 0;
+        padding: 0.75rem;
+    }
+
+    #trailer-player {
+        min-height: 160px;
+    }
+}
+
+/* --- Confirmation Popup Styles --- */
+.confirmation-popup-content {
+    background: var(--background-secondary);
+    width: clamp(300px, 80vw, 450px);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 5px 25px var(--shadow-color);
+    border: 1px solid var(--border-color);
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); /* More natural easing */
+}
+.episode-popup-overlay.active .confirmation-popup-content {
+    transform: scale(1);
+}
+#confirmation-popup-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+#confirmation-popup-message {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+.confirmation-popup-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+.popup-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all var(--transition-duration) ease;
+    min-width: 100px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+.popup-btn.confirm {
+    background-color: var(--brand-accent);
+    color: var(--background-primary);
+}
+.popup-btn.confirm:hover {
+    background-color: #ffae40; /* Lighter shade of accent */
+}
+.popup-btn.cancel {
+    background-color: var(--background-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.popup-btn.cancel:hover {
+    background-color: #333;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 0.5rem;
+}

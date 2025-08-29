@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Manga - Media App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      :root {
+        --accent-color: #de541e;
+        --accent-rgb: 222, 84, 30;
+      }
+
+      /* Base styles */
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #121212;
+        background-image: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.05) 1px,
+          transparent 1px
+        );
+        background-size: 5px 5px;
+        margin: 0;
+        color: #fff;
+        padding-top: 80px; /* Space for fixed navbar */
+        overflow-x: hidden;
+      }
+      .app-container {
+        padding: 0 20px;
+      }
+      .content-section {
+        margin-bottom: 30px;
+      }
+
+      /* --- NEW: Liquid Glass Navbar --- */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        padding: 15px 0;
+        background: rgba(18, 18, 18, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .navbar svg {
+        display: block;
+        margin: 0 auto;
+        height: 50px;
+        width: auto;
+        max-width: 80%;
+      }
+      .section-header {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 25px;
+        gap: 15px;
+        margin-top: 40px;
+      }
+      .carousel-heading, .section-title {
+        font-size: 1.8em;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin: 0;
+      }
+
+      /* --- NEW: Source Switch Button --- */
+      .source-switch-container {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+      #source-switch-btn {
+        background-color: #2c2c2e;
+        color: #fff;
+        border: 1px solid #444;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-size: 0.95em;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+      }
+      #source-switch-btn:hover {
+        background-color: #3a3a3c;
+      }
+      #source-switch-btn:active {
+        transform: scale(0.96);
+      }
+      #source-switch-btn .fas {
+        font-size: 1.1em;
+        color: var(--accent-color);
+      }
+
+
+      /* --- Image-Based Carousel Section (Jikan) --- */
+      #featured-carousel-container {
+        min-height: 400px; /* Reduced height */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 30px;
+      }
+      
+      .carousel-viewport {
+        width: 100%;
+        height: 350px;
+        position: relative;
+        perspective: 1200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .carousel-slide {
+        position: absolute;
+        width: 60%;
+        max-width: 220px;
+        height: 330px;
+        border-radius: 12px;
+        transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+          opacity 0.5s ease;
+        cursor: pointer;
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      .carousel-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      .slide-center {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+        z-index: 10;
+      }
+      .slide-left {
+        transform: translateX(-40%) scale(0.8) rotate(-8deg);
+        opacity: 1;
+        z-index: 5;
+      }
+      .slide-right {
+        transform: translateX(40%) scale(0.8) rotate(8deg);
+        opacity: 1;
+        z-index: 5;
+      }
+      .slide-exit-left {
+        transform: translateX(-150%) scale(0.6);
+        opacity: 0;
+        z-index: 1;
+      }
+      .slide-exit-right {
+        transform: translateX(150%) scale(0.6);
+        opacity: 0;
+        z-index: 1;
+      }
+
+      /* --- MangaDex Search Section --- */
+      #mangadex-search-container {
+          margin-bottom: 30px;
+      }
+      .search-box {
+          position: relative;
+          width: 100%;
+          max-width: 600px;
+          margin: 0 auto 30px auto;
+      }
+      #mangadex-search-input {
+          width: 100%;
+          padding: 15px 50px 15px 20px;
+          font-size: 1.1em;
+          border-radius: 30px;
+          border: 2px solid #333;
+          background-color: #1f1f1f;
+          color: #fff;
+          box-sizing: border-box;
+          transition: border-color 0.3s, box-shadow 0.3s;
+      }
+      #mangadex-search-input:focus {
+          outline: none;
+          border-color: var(--accent-color);
+          box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3);
+      }
+      #mangadex-search-btn {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: var(--accent-color);
+          border: none;
+          color: white;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 1.2em;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+      #mangadex-results-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 24px;
+          min-height: 200px;
+      }
+
+
+      /* --- Loader --- */
+      .loader {
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        border-top: 4px solid var(--accent-color);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 100px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* --- Horizontal Section Styles */
+      .section-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .view-all-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background-color: #333;
+        color: #fff;
+        border-radius: 50%;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .horizontal-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 15px;
+        gap: 15px;
+      }
+      .horizontal-scroll-container::-webkit-scrollbar {
+        display: none;
+      }
+      .horizontal-scroll-container {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Default Poster Card Style */
+      .poster-card {
+        flex-shrink: 0;
+        width: 140px;
+        height: 210px;
+        cursor: pointer;
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background-color: #222;
+      }
+      .poster-card:hover {
+        transform: scale(1.05) translateY(-5px);
+        box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.5);
+      }
+      .poster-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .poster-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 60%;
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.9) 0%,
+          transparent 100%
+        );
+        border-radius: 0 0 10px 10px;
+      }
+      .poster-card .poster-title {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 12px;
+        box-sizing: border-box;
+        z-index: 2;
+        font-size: 0.95em;
+        font-weight: 600;
+        color: #fff;
+        white-space: normal;
+        line-height: 1.2;
+      }
+      .error-message {
+        color: #e5e5e5;
+        font-style: italic;
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 40px 0;
+      }
+
+      /* --- Styles for Continue Reading (from anime.html) --- */
+      .poster-container {
+        flex-shrink: 0;
+        width: 160px;
+        text-align: left;
+        transition: transform 0.2s ease-in-out;
+      }
+      .poster-container:hover {
+        transform: translateY(-5px);
+      }
+      .poster-image-wrapper {
+        position: relative;
+        cursor: pointer;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: box-shadow 0.2s ease-in-out;
+      }
+      .poster-container:hover .poster-image-wrapper {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+      }
+      .poster-image-wrapper img {
+        width: 100%;
+        height: 230px;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
+      }
+      .poster-container:hover .poster-image-wrapper img {
+        transform: scale(1.05);
+      }
+      .poster-container .poster-title {
+        font-size: 0.9em;
+        font-weight: 500;
+        color: #e5e5e5;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color 0.2s ease;
+      }
+      .poster-container:hover .poster-title {
+        color: var(--accent-color);
+      }
+      .progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+      .progress-bar-inner {
+        height: 100%;
+        width: 0%;
+        background-color: var(--accent-color);
+        transition: width 0.5s ease;
+      }
+      .chapter-indicator {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background-color: rgba(0, 0, 0, 0.75);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.8em;
+        font-weight: 600;
+        z-index: 2;
+        backdrop-filter: blur(2px);
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <svg
+        width="1767"
+        height="292"
+        viewBox="0 0 1767 292"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect
+          width="1767"
+          height="292"
+          rx="146"
+          fill="black"
+          fill-opacity="0.01"
+        />
+        <rect x="802" y="56" width="164" height="22.5285" fill="#DE541E" />
+        <rect x="802" y="93.7502" width="164" height="22.5285" fill="#DE541E" />
+        <path
+          d="M957.858 235.619H931.051L903.773 71.8308H931.051L957.858 235.619Z"
+          fill="#DE541E"
+        />
+        <path
+          d="M813.05 235.619H839.857L867.135 71.8308H839.857L813.05 235.619Z"
+          fill="#DE541E"
+        />
+        <rect
+          x="867.135"
+          y="199.608"
+          width="34.3121"
+          height="36.0108"
+          fill="#DE541E"
+        />
+        <ellipse
+          cx="884.291"
+          cy="199.275"
+          rx="17.156"
+          ry="19.6726"
+          fill="#DE541E"
+        />
+      </svg>
+    </nav>
+    <div class="app-container">
+        <!-- Unified Header and Source Toggle -->
+        <div class="section-header">
+            <h2 class="section-title" id="main-heading">Spotlight</h2>
+            <div class="source-switch-container">
+              <button id="source-switch-btn">
+                <i class="fas fa-book"></i>
+                <span id="source-name">Jikan</span>
+              </button>
+            </div>
+        </div>
+
+        <!-- Jikan-specific Content -->
+        <section class="content-section" id="jikan-content">
+            <div id="featured-carousel-container">
+                <div class="loader"></div>
+            </div>
+            <main class="main-content" id="main-content-area-jikan"></main>
+        </section>
+
+        <!-- MangaDex-specific Content -->
+        <section class="content-section" id="mangadex-content" style="display: none;">
+            <div id="mangadex-search-container">
+                <div class="search-box">
+                    <input type="text" id="mangadex-search-input" placeholder="Search MangaDex...">
+                    <button id="mangadex-search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                <div id="mangadex-results-grid">
+                    <!-- Search results will appear here -->
+                </div>
+            </div>
+            <main class="main-content" id="main-content-area-mangadex"></main>
+        </section>
+        
+        <!-- Shared Content Area -->
+        <main class="main-content" id="main-content-area-shared"></main>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const isDeployed = window.location.protocol.startsWith('http');
+        const serverUrl = isDeployed ? '' : `http://${localStorage.getItem("extension_server_ip") || "localhost"}:7275`;
+        const JIKAN_API_BASE_URL = "https://api.jikan.moe/v4";
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileId = urlParams.get('profileId') || localStorage.getItem("currentProfileId");
+
+        // --- SOURCE MANAGEMENT ---
+        const mainHeading = document.getElementById("main-heading");
+        const sourceSwitchBtn = document.getElementById("source-switch-btn");
+        const sourceNameEl = document.getElementById("source-name");
+        const jikanContent = document.getElementById("jikan-content");
+        const mangadexContent = document.getElementById("mangadex-content");
+        const mangadexSearchInput = document.getElementById("mangadex-search-input");
+        const mangadexSearchBtn = document.getElementById("mangadex-search-btn");
+        const mangadexResultsGrid = document.getElementById("mangadex-results-grid");
+
+        let currentSource = localStorage.getItem("manga_source") || "jikan";
+
+        function setSource(source) {
+            currentSource = source;
+            localStorage.setItem("manga_source", source);
+
+            const jikanContinue = document.getElementById('continue-reading-jikan');
+            const mangadexContinue = document.getElementById('continue-reading-mangadex');
+
+            if (source === 'mangadex') {
+                jikanContent.style.display = 'none';
+                mangadexContent.style.display = 'block';
+                mainHeading.textContent = "MangaDex";
+                sourceNameEl.textContent = "MangaDex";
+                if(jikanContinue) jikanContinue.style.display = 'none';
+                if(mangadexContinue) mangadexContinue.style.display = 'block';
+            } else {
+                jikanContent.style.display = 'block';
+                mangadexContent.style.display = 'none';
+                mainHeading.textContent = "Spotlight";
+                sourceNameEl.textContent = "Jikan";
+                if(jikanContinue) jikanContinue.style.display = 'block';
+                if(mangadexContinue) mangadexContinue.style.display = 'none';
+            }
+        }
+        
+        sourceSwitchBtn.addEventListener('click', () => {
+            const newSource = currentSource === 'jikan' ? 'mangadex' : 'jikan';
+            setSource(newSource);
+        });
+        
+        // Initialize source
+        setSource(currentSource);
+        
+        function openMangaModal(source, mangaId) {
+           window.parent.openPopup(`manga-info.html?source=${source}&id=${mangaId}`);
+        }
+
+        // --- MANGADEX NEW SECTIONS ---
+        async function createMangaDexHorizontalSection(title, order) {
+            try {
+                const section = document.createElement("section");
+                section.className = "content-section";
+                section.innerHTML = `
+                <div class="section-header-row">
+                    <h2 class="section-title">${title}</h2>
+                </div>
+                <div class="horizontal-scroll-container"><div class="loader"></div></div>`;
+                
+                const mainContentAreaMangaDex = document.getElementById("main-content-area-mangadex");
+                mainContentAreaMangaDex.appendChild(section);
+
+                const scrollContainer = section.querySelector(".horizontal-scroll-container");
+                const response = await fetch(`${serverUrl}/mangadex/list?order=${order}&limit=15&profile_id=${profileId}`);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const responseData = await response.json();
+                displayMangaDexPosters(responseData.data, scrollContainer);
+            } catch (error) {
+                console.error(`Failed to load MangaDex section "${title}":`, error);
+                const container = document.getElementById("main-content-area-mangadex");
+                container.querySelector(".loader").parentElement.innerHTML = `<p class="error-message">Could not load section.</p>`;
+            }
+        }
+
+        function displayMangaDexPosters(mangaData, container) {
+            container.innerHTML = "";
+            if (!mangaData || mangaData.length === 0) {
+                container.innerHTML = `<p class="error-message">No results found.</p>`;
+                return;
+            }
+            mangaData.forEach((manga) => {
+                const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
+                const coverUrl = manga.cover_url || 'https://placehold.co/400x600/141414/333?text=?';
+
+                const card = document.createElement("div");
+                card.className = "poster-card";
+                card.onclick = () => openMangaModal('mangadex', manga.id);
+                card.innerHTML = `
+                <img src="${coverUrl}" alt="${title}" loading="lazy">
+                <p class="poster-title">${title}</p>`;
+                container.appendChild(card);
+            });
+        }
+
+        // --- JIKAN API LOGIC ---
+        const mainContentAreaJikan = document.getElementById("main-content-area-jikan");
+        const carouselContainer = document.getElementById("featured-carousel-container");
+        let carouselData = [];
+        let currentIndex = 0;
+        let slides = [];
+        let isAnimating = false;
+
+        async function initializeCarousel() {
+          try {
+            const response = await fetch(`${JIKAN_API_BASE_URL}/top/manga?filter=bypopularity&limit=10`);
+            if (!response.ok) throw new Error(`Carousel fetch error: ${response.status}`);
+            carouselData = (await response.json()).data.filter( (m) => m.images?.jpg?.large_image_url );
+            if (carouselData.length < 5) throw new Error("Not enough data for carousel.");
+
+            carouselContainer.innerHTML = `
+              <div class="carousel-viewport">
+                  ${carouselData.map( (manga) => `
+                      <div class="carousel-slide" data-id="${manga.mal_id}">
+                          <img src="${manga.images.jpg.large_image_url}" alt="${manga.title}">
+                      </div>`).join("")}
+              </div>`;
+
+            slides = Array.from(carouselContainer.querySelectorAll(".carousel-slide"));
+            const viewport = carouselContainer.querySelector(".carousel-viewport");
+
+            let touchstartX = 0;
+            viewport.addEventListener("touchstart", (e) => (touchstartX = e.changedTouches[0].screenX), { passive: true });
+            viewport.addEventListener("touchend", (e) => {
+              const touchendX = e.changedTouches[0].screenX;
+              if (touchendX < touchstartX - 50) navigateCarousel(1);
+              if (touchendX > touchstartX + 50) navigateCarousel(-1);
+            });
+            viewport.addEventListener("click", (e) => {
+              const slide = e.target.closest(".carousel-slide");
+              if (slide && slide.classList.contains("slide-center")) {
+                openMangaModal('jikan', slide.dataset.id);
+              }
+            });
+
+            updateCarousel();
+          } catch (error) {
+            console.error("Failed to initialize carousel:", error);
+            carouselContainer.innerHTML = `<p class="error-message">Could not load featured content.</p>`;
+          }
+        }
+
+        function navigateCarousel(direction) {
+          if (isAnimating) return;
+          isAnimating = true;
+          const total = carouselData.length;
+          const oldIndex = currentIndex;
+          currentIndex = (currentIndex + direction + total) % total;
+          updateCarousel(direction, oldIndex);
+          setTimeout(() => { isAnimating = false; }, 600);
+        }
+
+        function updateCarousel(direction = 0, oldIndex = -1) {
+          const total = slides.length;
+          const leftIndex = (currentIndex - 1 + total) % total;
+          const rightIndex = (currentIndex + 1 + total) % total;
+
+          if (direction !== 0 && oldIndex !== -1) {
+            const oldLeftIndex = (oldIndex - 1 + total) % total;
+            const oldRightIndex = (oldIndex + 1 + total) % total;
+            if (direction === 1) slides[oldLeftIndex].className = "carousel-slide slide-exit-left";
+            else slides[oldRightIndex].className = "carousel-slide slide-exit-right";
+          }
+
+          slides.forEach((slide, index) => {
+            setTimeout(() => {
+              let newClass = "carousel-slide";
+              if (index === currentIndex) newClass += " slide-center";
+              else if (index === leftIndex) newClass += " slide-left";
+              else if (index === rightIndex) newClass += " slide-right";
+              slide.className = newClass;
+            }, 10);
+          });
+        }
+
+        async function createJikanHorizontalSection(title, apiUrl) {
+          try {
+            const section = document.createElement("section");
+            section.className = "content-section";
+            section.innerHTML = `
+              <div class="section-header-row">
+                  <h2 class="section-title">${title}</h2>
+                  <a href="#" class="view-all-arrow">></a>
+              </div>
+              <div class="horizontal-scroll-container"><p style="color: #ccc;">Loading...</p></div>`;
+            mainContentAreaJikan.appendChild(section);
+            const scrollContainer = section.querySelector(".horizontal-scroll-container");
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const responseData = await response.json();
+            displayJikanPosters(responseData.data, scrollContainer);
+          } catch (error) {
+            console.error(`Failed to load section "${title}":`, error);
+          }
+        }
+
+        function displayJikanPosters(mangaData, container) {
+          container.innerHTML = "";
+          if (!mangaData || mangaData.length === 0) {
+            container.innerHTML = `<p class="error-message">No results found.</p>`;
+            return;
+          }
+          mangaData.forEach((item) => {
+            if (!item.images?.jpg?.image_url) return;
+            const isManga = (item.type && item.type.toLowerCase() === 'manga') || true; // Jikan endpoint here is for manga
+            const card = document.createElement("div");
+            card.className = "poster-card";
+            card.onclick = () => {
+              if (isManga) {
+                window.parent.openPopup(`manga-info.html?source=jikan&id=${item.mal_id}`);
+              } else {
+                window.parent.openPopup(`series-info.html?id=${item.mal_id}`);
+              }
+            };
+            card.innerHTML = `
+              <img src="${item.images.jpg.image_url}" alt="${item.title}" loading="lazy">
+              <div style="position:absolute;top:8px;left:8px;z-index:2;">
+                <span style="background:#DE541E;color:#fff;font-size:0.75em;font-weight:700;padding:2px 8px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.2);letter-spacing:1px;">Manga</span>
+              </div>
+              <p class="poster-title">${item.title}</p>`;
+            container.appendChild(card);
+          });
+        }
+
+        // --- MANGADEX API LOGIC ---
+        async function performMangaDexSearch() {
+            const query = mangadexSearchInput.value.trim();
+            if (query.length < 3) {
+                mangadexResultsGrid.innerHTML = `<p class="error-message">Please enter at least 3 characters.</p>`;
+                return;
+            }
+            
+            mangadexResultsGrid.innerHTML = `<div class="loader"></div>`;
+            try {
+                const response = await fetch(`${serverUrl}/mangadex/search?q=${encodeURIComponent(query)}&profile_id=${profileId}`);
+                if (!response.ok) throw new Error(`Search failed: ${response.statusText}`);
+                
+                const results = await response.json();
+                displayMangaDexResults(results.data);
+            } catch (error) {
+                console.error("MangaDex search error:", error);
+                mangadexResultsGrid.innerHTML = `<p class="error-message">Could not perform search. Please try again later.</p>`;
+            }
+        }
+
+        function displayMangaDexResults(data) {
+            mangadexResultsGrid.innerHTML = '';
+            if (!data || data.length === 0) {
+                mangadexResultsGrid.innerHTML = `<p class="error-message">No results found for your search.</p>`;
+                return;
+            }
+
+            data.forEach(manga => {
+                const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
+                const coverUrl = manga.cover_url || 'https://placehold.co/400x600/141414/333?text=?';
+
+                const card = document.createElement("div");
+                card.className = "poster-card";
+                card.onclick = () => openMangaModal('mangadex', manga.id);
+                card.innerHTML = `
+                    <img src="${coverUrl}" alt="${title}" loading="lazy">
+                    <p class="poster-title">${title}</p>`;
+                mangadexResultsGrid.appendChild(card);
+            });
+        }
+        
+        mangadexSearchBtn.addEventListener('click', performMangaDexSearch);
+        mangadexSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performMangaDexSearch();
+        });
+
+
+        // --- CONTINUE READING LOGIC (SHARED) ---
+        const mainContentAreaShared = document.getElementById("main-content-area-shared");
+
+        async function initializeContinueReading() {
+            const readingHistory = JSON.parse(localStorage.getItem("reading_history")) || [];
+            if (readingHistory.length === 0) return;
+
+            // Jikan
+            const jikanHistory = readingHistory.filter(item => !item.startsWith('mangadex:'));
+            const processedJikan = new Map();
+            jikanHistory.reverse().forEach(entry => {
+                const [mangaId, chapterStr] = entry.split('/');
+                if (mangaId && !processedJikan.has(mangaId)) {
+                    processedJikan.set(mangaId, { mangaId, last_chapter: parseInt(chapterStr, 10) });
+                }
+            });
+            if (processedJikan.size > 0) {
+                await renderJikanContinueReading(Array.from(processedJikan.values()));
+            }
+
+            // MangaDex
+            const mangadexHistory = readingHistory.filter(item => item.startsWith('mangadex:'));
+            const processedMangaDex = new Map();
+            mangadexHistory.reverse().forEach(entry => {
+                const [mangaId, chapterId] = entry.replace('mangadex:', '').split('/');
+                if (mangaId && !processedMangaDex.has(mangaId)) {
+                    processedMangaDex.set(mangaId, { mangaId, chapterId });
+                }
+            });
+            if (processedMangaDex.size > 0) {
+                await renderMangaDexContinueReading(Array.from(processedMangaDex.values()));
+            }
+            
+            // Final visibility check
+            setSource(currentSource);
+        }
+
+        async function renderJikanContinueReading(list) {
+            const section = document.createElement("section");
+            section.id = "continue-reading-jikan";
+            section.className = "content-section";
+            section.innerHTML = `<div class="section-header-row">
+                                   <h2 class="section-title">Continue Reading (Jikan)</h2>
+                               </div>
+                               <div class="horizontal-scroll-container"></div>`;
+            mainContentAreaShared.prepend(section);
+            const container = section.querySelector(".horizontal-scroll-container");
+
+            for (const item of list.slice(0, 15)) {
+                try {
+                    await new Promise((resolve) => setTimeout(resolve, 350));
+                    const response = await fetch(`${JIKAN_API_BASE_URL}/manga/${item.mangaId}`);
+                    if (!response.ok) continue;
+                    const mangaData = (await response.json()).data;
+                    if (!mangaData) continue;
+
+                    const title = mangaData.title_english || mangaData.title;
+                    const totalChapters = mangaData.chapters;
+                    const progressPercent = totalChapters > 0 ? (item.last_chapter / totalChapters) * 100 : 0;
+                    const isFinished = totalChapters && item.last_chapter >= totalChapters;
+                    const indicatorText = isFinished ? "Finished" : `Chapter ${item.last_chapter}`;
+
+                    const poster = createPoster('jikan', mangaData.mal_id, mangaData.images?.jpg?.image_url, title, indicatorText, progressPercent);
+                    container.appendChild(poster);
+                } catch (err) { console.error(`Failed to fetch Jikan data for manga ID ${item.mangaId}:`, err); }
+            }
+        }
+
+        async function renderMangaDexContinueReading(list) {
+            const section = document.createElement("section");
+            section.id = "continue-reading-mangadex";
+            section.className = "content-section";
+            section.innerHTML = `<div class="section-header-row">
+                                   <h2 class="section-title">Continue Reading (MangaDex)</h2>
+                               </div>
+                               <div class="horizontal-scroll-container"></div>`;
+            mainContentAreaShared.prepend(section);
+            const container = section.querySelector(".horizontal-scroll-container");
+
+            for (const item of list.slice(0, 15)) {
+                try {
+                    const [mangaRes, chaptersRes] = await Promise.all([
+                        fetch(`${serverUrl}/mangadex/manga/${item.mangaId}`),
+                        fetch(`${serverUrl}/mangadex/manga/${item.mangaId}/chapters`)
+                    ]);
+                    if (!mangaRes.ok || !chaptersRes.ok) continue;
+                    
+                    const mangaData = await mangaRes.json();
+                    const chaptersData = await chaptersRes.json();
+                    const chapters = chaptersData.chapters || [];
+
+                    const title = mangaData.attributes.title.en || Object.values(mangaData.attributes.title)[0];
+                    const coverUrl = mangaData.image_url;
+                    
+                    const currentChapterIndex = chapters.findIndex(c => c.id === item.chapterId);
+                    const totalChapters = chapters.length;
+                    const progressPercent = totalChapters > 0 && currentChapterIndex !== -1 ? ((totalChapters - currentChapterIndex) / totalChapters) * 100 : 0;
+                    const chapterNumber = chapters[currentChapterIndex]?.attributes.chapter || '?';
+                    const indicatorText = `Chapter ${chapterNumber}`;
+
+                    const poster = createPoster('mangadex', item.mangaId, coverUrl, title, indicatorText, progressPercent);
+                    container.appendChild(poster);
+
+                } catch (err) { console.error(`Failed to fetch MangaDex data for manga ID ${item.mangaId}:`, err); }
+            }
+        }
+        
+        function createPoster(source, id, imageUrl, title, indicatorText, progressPercent) {
+            const posterContainer = document.createElement("div");
+            posterContainer.className = "poster-container";
+            posterContainer.innerHTML = `
+                <div class="poster-image-wrapper">
+                    <div class="chapter-indicator">${indicatorText}</div>
+                    <img src="${imageUrl}" alt="${title}" loading="lazy">
+                    <div class="progress-bar">
+                        <div class="progress-bar-inner" style="width: ${progressPercent}%;"></div>
+                    </div>
+                </div>
+                <p class="poster-title" title="${title}">${title}</p>`;
+            posterContainer.addEventListener("click", () => openMangaModal(source, id));
+            return posterContainer;
+        }
+
+        async function initializePage() {
+            // Jikan content
+            initializeCarousel();
+            await initializeContinueReading();
+            createJikanHorizontalSection("Top Manga", `${JIKAN_API_BASE_URL}/top/manga?limit=20`);
+            createJikanHorizontalSection("Top Manhwa", `${JIKAN_API_BASE_URL}/manga?type=manhwa&order_by=popularity&limit=15`);
+            
+            // MangaDex content
+            createMangaDexHorizontalSection("Recently Updated", "latestUploadedChapter");
+            createMangaDexHorizontalSection("Popular Titles", "followedCount");
+        }
+
+        initializePage();
+      });
+    </script>
+  </body>
+</html>

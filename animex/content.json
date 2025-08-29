@@ -1,0 +1,301 @@
+{
+    "spotlight": [
+        {
+            "id": 52299,
+            "name": "Solo Leveling",
+            "image": "https://cdn.myanimelist.net/images/anime/1801/142390l.jpg",
+            "logo": "https://imgsrv.crunchyroll.com/cdn-cgi/image/fit=contain,format=auto,quality=85,width=600/keyart/GDKHZEJ0K-title_logo-en-us"
+        },
+        {
+            "id": 51009,
+            "name": "Jujutsu Kaisen: Shibuya Incident",
+            "image": "https://images4.alphacoders.com/138/1389939.jpg",
+            "logo": "https://imgsrv.crunchyroll.com/cdn-cgi/image/fit=contain,format=auto,quality=85,width=600/keyart/GRDV0019R-title_logo-en-us"
+        },
+        {
+            "id": 52991,
+            "name": "Frieren: Beyond Journey's End",
+            "image": "https://res.cloudinary.com/dsa5iolcx/image/upload/v1752203413/frieren.jpg",
+            "logo": "https://imgsrv.crunchyroll.com/cdn-cgi/image/fit=contain,format=auto,quality=85,width=600/keyart/GG5H5XQX4-title_logo-en-us"
+        },
+        {
+            "id": 21,
+            "name": "One Piece",
+            "image": "https://imgsrv.crunchyroll.com/cdn-cgi/image/fit=cover,format=auto,quality=85,width=1920/keyart/GRMG8ZQZR-backdrop_wide",
+            "logo": "https://imgsrv.crunchyroll.com/cdn-cgi/image/fit=contain,format=auto,quality=85,width=600/keyart/GRMG8ZQZR-title_logo-en-us"
+        },
+        {
+            "id": 52588,
+            "name": "Kaiju No. 8",
+            "image": "https://cdn.myanimelist.net/images/anime/1370/140362l.jpg",
+            "logo": "https://imgsrv.crunchyroll.com/cdn-cgi/image/fit=contain,format=auto,quality=85,width=600/keyart/GG5H5XQ7D-title_logo-en-us"
+        }
+    ],
+    "sections": [
+        {
+            "title": "New Releases",
+            "items": [
+                {
+                    "id": 52034,
+                    "name": "[Oshi No Ko]",
+                    "image": "https://cdn.myanimelist.net/images/anime/1812/134736l.jpg"
+                },
+                {
+                    "id": 51019,
+                    "name": "Demon Slayer: Kimetsu no Yaiba Swordsmith Village Arc",
+                    "image": "https://cdn.myanimelist.net/images/anime/1765/135099l.jpg"
+                },
+                {
+                    "id": 41467,
+                    "name": "Bleach: Thousand-Year Blood War",
+                    "image": "https://cdn.myanimelist.net/images/anime/1908/135431l.jpg"
+                },
+                {
+                    "id": 50602,
+                    "name": "Spy x Family Part 2",
+                    "image": "https://cdn.myanimelist.net/images/anime/1111/127508l.jpg"
+                },
+                {
+                    "id": 49387,
+                    "name": "Vinland Saga Season 2",
+                    "image": "https://cdn.myanimelist.net/images/anime/1170/124312l.jpg"
+                },
+                {
+                    "id": 51009,
+                    "name": "Jujutsu Kaisen Season 2",
+                    "image": "https://cdn.myanimelist.net/images/anime/1792/138022l.jpg"
+                },
+                {
+                    "id": 45576,
+                    "name": "Mushoku Tensei: Jobless Reincarnation Part 2",
+                    "image": "https://cdn.myanimelist.net/images/anime/1028/117777l.jpg"
+                },
+                {
+                    "id": 38691,
+                    "name": "Dr. Stone",
+                    "image": "https://cdn.myanimelist.net/images/anime/1613/102576l.jpg"
+                },
+                {
+                    "id": 49918,
+                    "name": "My Hero Academia Season 6",
+                    "image": "https://cdn.myanimelist.net/images/anime/1483/126005l.jpg"
+                },
+                {
+                    "id": 44511,
+                    "name": "Chainsaw Man",
+                    "image": "https://cdn.myanimelist.net/images/anime/1806/126216l.jpg"
+                }
+            ]
+        },
+        {
+            "title": "Anime Award Winners",
+            "items": [
+                {
+                    "id": 51009,
+                    "name": "Jujutsu Kaisen Season 2",
+                    "image": "https://cdn.myanimelist.net/images/anime/1792/138022l.jpg"
+                },
+                {
+                    "id": 52034,
+                    "name": "[Oshi No Ko]",
+                    "image": "https://cdn.myanimelist.net/images/anime/1812/134736l.jpg"
+                },
+                {
+                    "id": 49387,
+                    "name": "Vinland Saga Season 2",
+                    "image": "https://cdn.myanimelist.net/images/anime/1170/124312l.jpg"
+                },
+                {
+                    "id": 50602,
+                    "name": "Spy x Family Part 2",
+                    "image": "https://cdn.myanimelist.net/images/anime/1111/127508l.jpg"
+                },
+                {
+                    "id": 41467,
+                    "name": "Bleach: Thousand-Year Blood War",
+                    "image": "https://cdn.myanimelist.net/images/anime/1908/135431l.jpg"
+                },
+                {
+                    "id": 44511,
+                    "name": "Chainsaw Man",
+                    "image": "https://cdn.myanimelist.net/images/anime/1806/126216l.jpg"
+                },
+                {
+                    "id": 51019,
+                    "name": "Demon Slayer: Kimetsu no Yaiba Swordsmith Village Arc",
+                    "image": "https://cdn.myanimelist.net/images/anime/1765/135099l.jpg"
+                },
+                {
+                    "id": 40834,
+                    "name": "Ranking of Kings",
+                    "image": "https://cdn.myanimelist.net/images/anime/1347/117616l.jpg"
+                },
+                {
+                    "id": 52299,
+                    "name": "Solo Leveling",
+                    "image": "https://cdn.myanimelist.net/images/anime/1801/142390l.jpg"
+                },
+                {
+                    "id": 52991,
+                    "name": "Frieren: Beyond Journey's End",
+                    "image": "https://cdn.myanimelist.net/images/anime/1015/138006l.jpg"
+                }
+            ]
+        },
+        {
+            "title": "Most Popular",
+            "items": [
+                {
+                    "id": 38000,
+                    "name": "Demon Slayer: Kimetsu no Yaiba",
+                    "image": "https://cdn.myanimelist.net/images/anime/1286/99889l.jpg"
+                },
+                {
+                    "id": 40748,
+                    "name": "Jujutsu Kaisen",
+                    "image": "https://cdn.myanimelist.net/images/anime/1171/109222l.jpg"
+                },
+                {
+                    "id": 31964,
+                    "name": "My Hero Academia",
+                    "image": "https://cdn.myanimelist.net/images/anime/10/78745l.jpg"
+                },
+                {
+                    "id": 16498,
+                    "name": "Attack on Titan",
+                    "image": "https://cdn.myanimelist.net/images/anime/10/47347l.jpg"
+                },
+                {
+                    "id": 21,
+                    "name": "One Piece",
+                    "image": "https://cdn.myanimelist.net/images/anime/1244/138851l.jpg"
+                },
+                {
+                    "id": 50265,
+                    "name": "Spy x Family",
+                    "image": "https://cdn.myanimelist.net/images/anime/1441/122795l.jpg"
+                },
+                {
+                    "id": 44511,
+                    "name": "Chainsaw Man",
+                    "image": "https://cdn.myanimelist.net/images/anime/1806/126216l.jpg"
+                },
+                {
+                    "id": 269,
+                    "name": "Bleach",
+                    "image": "https://cdn.myanimelist.net/images/anime/1541/147774l.jpg"
+                },
+                {
+                    "id": 52299,
+                    "name": "Solo Leveling",
+                    "image": "https://cdn.myanimelist.net/images/anime/1801/142390l.jpg"
+                },
+                {
+                    "id": 20,
+                    "name": "Naruto",
+                    "image": "https://cdn.myanimelist.net/images/anime/1141/142503l.jpg"
+                }
+            ]
+        },
+        {
+            "title": "Beginner Friendly",
+            "items": [
+                {
+                    "id": 31964,
+                    "name": "My Hero Academia",
+                    "image": "https://cdn.myanimelist.net/images/anime/10/78745l.jpg"
+                },
+                {
+                    "id": 1535,
+                    "name": "Death Note",
+                    "image": "https://cdn.myanimelist.net/images/anime/1079/138100l.jpg"
+                },
+                {
+                    "id": 16498,
+                    "name": "Attack on Titan",
+                    "image": "https://cdn.myanimelist.net/images/anime/10/47347l.jpg"
+                },
+                {
+                    "id": 38000,
+                    "name": "Demon Slayer: Kimetsu no Yaiba",
+                    "image": "https://cdn.myanimelist.net/images/anime/1286/99889l.jpg"
+                },
+                {
+                    "id": 32281,
+                    "name": "Your Name.",
+                    "image": "https://cdn.myanimelist.net/images/anime/5/87048l.jpg"
+                },
+                {
+                    "id": 527,
+                    "name": "Pok\u00e9mon",
+                    "image": "https://cdn.myanimelist.net/images/anime/1787/140239l.jpg"
+                },
+                {
+                    "id": 813,
+                    "name": "Dragon Ball Z",
+                    "image": "https://cdn.myanimelist.net/images/anime/1277/142022l.jpg"
+                },
+                {
+                    "id": 20,
+                    "name": "Naruto",
+                    "image": "https://cdn.myanimelist.net/images/anime/1141/142503l.jpg"
+                }
+            ]
+        },
+        {
+            "title": "Where's The Action at?",
+            "items": [
+                {
+                    "id": 40748,
+                    "name": "Jujutsu Kaisen",
+                    "image": "https://cdn.myanimelist.net/images/anime/1171/109222l.jpg"
+                },
+                {
+                    "id": 38000,
+                    "name": "Demon Slayer: Kimetsu no Yaiba",
+                    "image": "https://cdn.myanimelist.net/images/anime/1286/99889l.jpg"
+                },
+                {
+                    "id": 31964,
+                    "name": "My Hero Academia",
+                    "image": "https://cdn.myanimelist.net/images/anime/10/78745l.jpg"
+                },
+                {
+                    "id": 16498,
+                    "name": "Attack on Titan",
+                    "image": "https://cdn.myanimelist.net/images/anime/10/47347l.jpg"
+                },
+                {
+                    "id": 44511,
+                    "name": "Chainsaw Man",
+                    "image": "https://cdn.myanimelist.net/images/anime/1806/126216l.jpg"
+                },
+                {
+                    "id": 50265,
+                    "name": "Spy x Family",
+                    "image": "https://cdn.myanimelist.net/images/anime/1441/122795l.jpg"
+                },
+                {
+                    "id": 459,
+                    "name": "One Piece: The Movie",
+                    "image": "https://cdn.myanimelist.net/images/anime/1770/97704l.jpg"
+                },
+                {
+                    "id": 269,
+                    "name": "Bleach",
+                    "image": "https://cdn.myanimelist.net/images/anime/1541/147774l.jpg"
+                },
+                {
+                    "id": 38691,
+                    "name": "Dr. Stone",
+                    "image": "https://cdn.myanimelist.net/images/anime/1613/102576l.jpg"
+                },
+                {
+                    "id": 58567,
+                    "name": "Solo Leveling Season 2: Arise from the Shadow",
+                    "image": "https://cdn.myanimelist.net/images/anime/1448/147351l.jpg"
+                }
+            ]
+        }
+    ]
+}

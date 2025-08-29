@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animex</title>
+    <link rel="icon" href="Resources/favicon.png" type="image/png">
+    <link rel="stylesheet" href="Resources/styles.css">
+</head>
+<body>
+
+    <div id="app-wrapper">
+        <!-- Header Image -->
+        <img class="app-absolute header-main-image" style="left: -44px; top: -26px;" src="https://images.unsplash.com/photo-1579803815617-16568f90450e?q=80&w=1933&auto=format&fit=crop" alt="Header Background"/>
+        
+        <!-- Featured Content -->
+        <img id="featured-poster" class="app-absolute featured-poster-img" style="left: 36px; top: 59px;" src="https://placehold.co/126x193/99AAB5/FFFFFF?text=Featured&font=montserrat" alt="Featured Poster"/>
+        <div id="featured-info" class="app-absolute flex-center-col featured-small-text" style="left: 176px; top: 82px;">TYPE | YEAR</div>
+        <div id="featured-title" class="app-absolute featured-title-text" style="left: 176px; top: 105px; width: 184px; height: auto; max-height: 80px;">Featured Manga Title</div>
+        <div class="app-absolute featured-button-background" style="left: 176px; top: 203px;"></div>
+        <div class="app-absolute flex-center-col featured-small-text" style="left: 205px; top: 207px;">READ MORE</div>
+        <div class="app-absolute featured-button-icon-svg-wrapper" style="left: 185px; top: 207px;">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.15329 12.2561C2.28704 12.2561 2.38735 12.2214 2.55453 12.1171L10.9203 6.98663C11.1543 6.85455 11.2948 6.72246 11.2948 6.5C11.2948 6.28449 11.1543 6.15241 10.9203 6.01337L2.55453 0.882887C2.38735 0.778609 2.28704 0.74385 2.15329 0.74385C1.8858 0.74385 1.70525 0.945454 1.70525 1.29305V11.707C1.70525 12.0545 1.8858 12.2561 2.15329 12.2561Z" fill="white" stroke="white"/>
+            </svg>
+        </div>
+        
+        <!-- Explore Tab Backing & Content -->
+        <div class="explore-backing">
+            <div class="explore-title">
+                Explore Manga
+            </div>
+            <div id="scrollable-list-content">
+                <!-- Manga items will be injected here by JavaScript -->
+                <div class="loading-message">Loading manga...</div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="bottom-tabbar">
+            <!-- MANGA Tab (Active) -->
+            <div class="tab-item">
+                <div class="app-absolute tab-icon-svg-wrapper" style="left: 24px; top: 12px;">
+                    <svg width="33" height="29" viewBox="0 0 33 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.1507 24.6181C13.4752 24.6181 15.737 26.2917 16.0776 27.0829C16.0912 27.1286 16.1185 27.159 16.1594 27.1894V3.74294C15.3146 2.93654 12.9983 1.73455 10.1643 1.73455C6.68992 1.73455 3.46078 3.71251 3.4744 4.79279V26.8547C3.4744 27.0981 3.62428 27.2655 3.84228 27.2655C4.04665 27.2655 4.19653 27.1894 4.25103 27.0829C4.59166 26.307 6.8398 24.6181 10.1507 24.6181ZM22.8493 24.6181C26.1738 24.6181 28.422 26.307 28.7626 27.0829C28.8035 27.1894 28.9533 27.2655 29.1577 27.2655C29.3757 27.2655 29.5256 27.0981 29.5256 26.8547V4.79279C29.5392 3.71251 26.3237 1.73455 22.8357 1.73455C20.0017 1.73455 17.699 2.93654 16.8406 3.74294V27.1894C16.8951 27.159 16.9088 27.1286 16.9224 27.0829C17.263 26.2917 19.5248 24.6181 22.8493 24.6181Z" fill="#B6521B" stroke="#B6521B"/>
+                    </svg>
+                </div>
+                <div class="app-absolute tab-label-text" style="left: 17px; color: #B6521B;">MANGA</div>
+            </div>
+
+            <!-- ANIME Tab -->
+            <div class="tab-item">
+                <div class="app-absolute tab-icon-svg-wrapper" style="left: 104px; top: 12px;">
+                    <svg width="35" height="29" viewBox="0 0 35 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.73459 26.8169H30.2654C31.3442 26.8169 31.9435 26.1127 31.9435 24.8451V4.15492C31.9435 2.9014 31.3322 2.18309 30.2654 2.18309H4.73459C3.66781 2.18309 3.05651 2.9014 3.05651 4.15492V24.8451C3.05651 26.1127 3.65582 26.8169 4.73459 26.8169ZM4.73459 26.1268C3.97945 26.1268 3.64384 25.7324 3.64384 24.8451V4.15492C3.64384 3.28168 3.99144 2.87323 4.73459 2.87323H30.2654C31.0086 2.87323 31.3562 3.28168 31.3562 4.15492V24.8451C31.3562 25.7324 31.0325 26.1268 30.2654 26.1268H4.73459ZM4.95034 6.25351C4.95034 6.59154 5.19007 6.88732 5.53767 6.88732H6.77226C7.11986 6.88732 7.33562 6.59154 7.33562 6.25351V4.92957C7.33562 4.52112 7.11986 4.25351 6.77226 4.25351H5.53767C5.1661 4.25351 4.95034 4.52112 4.95034 4.92957V6.25351ZM27.6764 6.25351C27.6764 6.59154 27.8921 6.88732 28.2397 6.88732H29.4863C29.8219 6.88732 30.0497 6.59154 30.0497 6.25351V4.92957C30.0497 4.52112 29.8219 4.25351 29.4863 4.25351H28.2397C27.8681 4.25351 27.6764 4.52112 27.6764 4.92957V6.25351ZM8.72603 12.5352C8.72603 13 8.97774 13.2676 9.37329 13.2676H25.6267C26.0342 13.2676 26.274 13 26.274 12.5352V5.0845C26.274 4.60563 26.0342 4.33802 25.6267 4.33802H9.37329C8.97774 4.33802 8.72603 4.60563 8.72603 5.0845V12.5352ZM4.95034 10.7042C4.95034 11.0563 5.19007 11.3521 5.53767 11.3521H6.77226C7.11986 11.3521 7.33562 11.0563 7.33562 10.7042V9.38027C7.33562 8.97182 7.11986 8.7183 6.77226 8.7183H5.53767C5.1661 8.7183 4.95034 8.97182 4.95034 9.38027V10.7042ZM27.6764 10.7042C27.6764 11.0563 27.8921 11.3521 28.2397 11.3521H29.4863C29.8219 11.3521 30.0497 11.0563 30.0497 10.7042V9.38027C30.0497 8.97182 29.8219 8.7183 29.4863 8.7183H28.2397C27.8681 8.7183 27.6764 8.97182 27.6764 9.38027V10.7042ZM4.95034 15.169C4.95034 15.507 5.19007 15.7887 5.53767 15.7887H6.77226C7.11986 15.7887 7.33562 15.507 7.33562 15.169V13.8451C7.33562 13.4366 7.11986 13.169 6.77226 13.169H5.53767C5.1661 13.169 4.95034 13.4366 4.95034 13.8451V15.169ZM27.6764 15.169C27.6764 15.507 27.8921 15.7887 28.2397 15.7887H29.4863C29.8219 15.7887 30.0497 15.507 30.0497 15.169V13.8451C30.0497 13.4366 29.8219 13.169 29.4863 13.169H28.2397C27.8681 13.169 27.6764 13.4366 27.6764 13.8451V15.169ZM8.72603 23.8873C8.72603 24.3521 8.97774 24.6197 9.37329 24.6197H25.6267C26.0342 24.6197 26.274 24.3521 26.274 23.8873V16.4225C26.274 15.9577 26.0342 15.6901 25.6267 15.6901H9.37329C8.97774 15.6901 8.72603 15.9577 8.72603 16.4225V23.8873ZM4.95034 19.6197C4.95034 19.9577 5.19007 20.2394 5.53767 20.2394H6.77226C7.11986 20.2394 7.33562 19.9577 7.33562 19.6197V18.2958C7.33562 17.8873 7.11986 17.6197 6.77226 17.6197H5.53767C5.1661 17.6197 4.95034 17.8873 4.95034 18.2958V19.6197ZM27.6764 19.6197C27.6764 19.9577 27.8921 20.2394 28.2397 20.2394H29.4863C29.8219 20.2394 30.0497 19.9577 30.0497 19.6197V18.2958C30.0497 17.8873 29.8219 17.6197 29.4863 17.6197H28.2397C27.8681 17.6197 27.6764 17.8873 27.6764 18.2958V19.6197ZM4.95034 24.0563C4.95034 24.4225 5.19007 24.7042 5.53767 24.7042H6.77226C7.11986 24.7042 7.33562 24.4225 7.33562 24.0563V22.7324C7.33562 22.3521 7.11986 22.0845 6.77226 22.0845H5.53767C5.1661 22.0845 4.95034 22.3521 4.95034 22.7324V24.0563ZM27.6764 24.0563C27.6764 24.4225 27.8921 24.7042 28.2397 24.7042H29.4863C29.8219 24.7042 30.0497 24.4225 30.0497 24.0563V22.7324C30.0497 22.3521 29.8219 22.0845 29.4863 22.0845H28.2397C27.8681 22.0845 27.6764 22.3521 27.6764 22.7324V24.0563Z" fill="#5B574C" stroke="#5B574C"/>
+                    </svg>
+                </div>
+                <div class="app-absolute tab-label-text" style="left: 101px; color: #5B574C;">ANIME</div>
+            </div>
+
+            <!-- SEARCH Tab -->
+            <div class="tab-item">
+                <div class="app-absolute tab-icon-svg-wrapper" style="left: 183px; top: 10px;">
+                    <svg width="35" height="37" viewBox="0 0 35 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.5 33.2075C25.625 33.2075 32.2713 26.5933 32.2713 18.4924C32.2713 10.4067 25.625 3.79253 17.5 3.79253C9.375 3.79253 2.72866 10.4067 2.72866 18.4924C2.72866 26.5933 9.375 33.2075 17.5 33.2075ZM17.5 32.4641C9.77134 32.4641 3.47561 26.1988 3.47561 18.4924C3.47561 10.8011 9.77134 4.53587 17.5 4.53587C25.2439 4.53587 31.5244 10.8011 31.5244 18.4924C31.5244 26.1988 25.2439 32.4641 17.5 32.4641ZM15.8079 22.2243C17.1341 22.2243 18.3537 21.7692 19.314 20.9803L23.75 25.41C23.9024 25.5617 24.0091 25.6376 24.2073 25.6376C24.5122 25.6376 24.6951 25.4252 24.6951 25.1673C24.6951 24.9701 24.6189 24.879 24.4817 24.7425L20.0305 20.2977C20.8689 19.3268 21.3872 18.0525 21.3872 16.672C21.3872 13.6228 18.872 11.1045 15.8079 11.1045C12.7287 11.1045 10.2134 13.6228 10.2134 16.672C10.2134 19.7364 12.7287 22.2243 15.8079 22.2243ZM15.8079 21.4658C13.1555 21.4658 10.9756 19.3116 10.9756 16.672C10.9756 14.0324 13.1555 11.8631 15.8079 11.8631C18.4604 11.8631 20.625 14.0324 20.625 16.672C20.625 19.3116 18.4604 21.4658 15.8079 21.4658Z" fill="#5B574C" stroke="#5B574C"/>
+                    </svg>
+                </div>
+                <div class="app-absolute tab-label-text" style="left: 175px; color: #5B574C;">SEARCH</div>
+            </div>
+
+            <!-- LIBRARY Tab -->
+            <div class="tab-item">
+                <div class="app-absolute tab-icon-svg-wrapper" style="left: 269px; top: 8px;">
+                    <svg width="24" height="39" viewBox="0 0 24 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.82036 34.5045C4.10779 34.5045 4.34731 34.344 4.58683 34.052L11.2814 25.893C11.5928 25.5135 11.7844 25.4405 12 25.4405C12.2156 25.4405 12.4192 25.5135 12.7186 25.893L19.4012 34.0375C19.6647 34.3732 19.8922 34.5045 20.1796 34.5045C20.6467 34.5045 20.9461 34.0958 20.9461 33.4828V8.24666C20.9461 5.80916 19.8802 4.49554 17.8683 4.49554H6.13174C4.11976 4.49554 3.05389 5.80916 3.05389 8.24666V33.4828C3.05389 34.0958 3.3533 34.5045 3.82036 34.5045Z" fill="#5B574C" stroke="#5B574C"/>
+                    </svg>
+                </div>
+                <div class="app-absolute tab-label-text" style="left: 255px; color: #5B574C;">LIBRARY</div>
+            </div>
+
+            <!-- SETTINGS Tab -->
+            <div class="tab-item">
+                 <div class="app-absolute tab-icon-svg-wrapper" style="left: 347.28px; top: 12px;">
+                    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M29.1824 12.5815L25.4 11.9632C25.1786 11.2042 24.8758 10.4746 24.497 9.78403L26.705 6.63715C26.8835 6.38307 26.8528 6.03683 26.6333 5.81667L24.1443 3.32899C23.9222 3.10755 23.5728 3.07875 23.3181 3.26243L20.2186 5.49027C19.5216 5.10499 18.7856 4.79907 18.0221 4.57699L17.3622 0.809949C17.3085 0.504029 17.0429 0.280029 16.7318 0.280029H13.2118C12.8982 0.280029 12.6307 0.507229 12.5802 0.816989L11.9683 4.56355C11.2003 4.78435 10.463 5.08707 9.76864 5.46723L6.67744 3.25923C6.42208 3.07683 6.07456 3.10627 5.85248 3.32707L3.3648 5.81475C3.14528 6.03427 3.11456 6.37987 3.29312 6.63395L5.46848 9.74627C5.08128 10.4471 4.7728 11.1888 4.54816 11.9607L0.81632 12.5821C0.50784 12.6333 0.281281 12.9008 0.281281 13.2131V16.7331C0.281281 17.0435 0.504 17.3091 0.80928 17.3636L4.54112 18.0253C4.76448 18.7952 5.07296 19.537 5.46144 20.2397L3.2592 23.32C3.07744 23.5741 3.10624 23.9229 3.32704 24.145L5.81536 26.6352C6.03488 26.8547 6.38112 26.8855 6.6352 26.7069L9.752 24.5239C10.4515 24.9085 11.1907 25.2138 11.9568 25.4352L12.5814 29.1863C12.632 29.4941 12.8989 29.72 13.2118 29.72H16.7318C17.0422 29.72 17.3078 29.4973 17.3616 29.192L18.0304 25.4224C18.7978 25.1965 19.5331 24.8893 20.2256 24.504L23.3648 26.7063C23.6195 26.8861 23.9651 26.8547 24.1853 26.6352L26.6736 24.145C26.895 23.9229 26.9238 23.5728 26.7402 23.3181L24.5014 20.2096C24.881 19.5184 25.1824 18.7875 25.4019 18.0285L29.1894 17.3636C29.496 17.3098 29.7187 17.0435 29.7187 16.7331V13.2131C29.7194 12.8995 29.4922 12.632 29.1824 12.5815ZM15 19.48C12.5258 19.48 10.52 17.4743 10.52 15C10.52 12.5258 12.5258 10.52 15 10.52C17.4742 10.52 19.48 12.5258 19.48 15C19.48 17.4743 17.4742 19.48 15 19.48Z" fill="#5B574C"/>
+                    </svg>
+                </div>
+                <div class="app-absolute tab-label-text" style="left: 331px; color: #5B574C;">SETTINGS</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="desktop-message">
+        Desktop app isn't available now. Please use a mobile device or resize your browser to a mobile width (e.g., less than 420px wide).
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const PROXY_URL = 'https://cors-anywhere.herokuapp.com/'; // Example public proxy
+const API_URL = PROXY_URL + 'https://api.consumet.org/meta/anilist/trending?type=MANGA&perPage=15'; // Example: Fetch 15 trending manga
+        const scrollableListContent = document.getElementById('scrollable-list-content');
+        
+        // Featured content elements
+        const featuredPoster = document.getElementById('featured-poster');
+        const featuredInfo = document.getElementById('featured-info');
+        const featuredTitle = document.getElementById('featured-title');
+
+        async function fetchManga() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                displayManga(data.results);
+                if (data.results && data.results.length > 0) {
+                    displayFeaturedManga(data.results[0]);
+                }
+            } catch (error) {
+                scrollableListContent.innerHTML = `<div class="error-message">Failed to load manga. ${error.message}</div>`;
+                console.error('Error fetching manga:', error);
+            }
+        }
+
+        function displayManga(mangaList) {
+            scrollableListContent.innerHTML = ''; // Clear loading message or previous content
+
+            if (!mangaList || mangaList.length === 0) {
+                scrollableListContent.innerHTML = '<div class="info-message">No manga found.</div>';
+                return;
+            }
+
+            mangaList.forEach(manga => {
+                const title = manga.title.english || manga.title.romaji || 'N/A';
+                const coverImage = manga.image || 'https://placehold.co/58x64/333333/FFFFFF?text=N/A&font=montserrat';
+                const rating = manga.rating ? (manga.rating / 10).toFixed(1) : 'N/A';
+                const chapters = manga.totalChapters || manga.chapters || 'N/A';
+                const status = manga.status || 'N/A';
+                const year = manga.releaseDate || 'N/A';
+
+                const listItemWrapper = document.createElement('div');
+                listItemWrapper.className = 'list-item-wrapper';
+
+                // Adjust inline styles as needed or move more to CSS if positions become complex
+                listItemWrapper.innerHTML = `
+                    <div class="app-absolute li-thumb-container" style="top: 5px; left: 10px;">
+                        <img class="li-thumb-img" src="${coverImage}" alt="${title} cover" />
+                    </div>
+                    <div class="app-absolute flex-center-col li-main-title-text" style="left: 85px; top: 8px; width: calc(100% - 125px);">${title}</div>
+                    
+                    <div class="app-absolute li-rating-badge-bg" style="left: 85px; top: 48px;"></div>
+                    <div class="app-absolute flex-center-col li-badge-text li-rating-text-spacing" style="left: 88px; top: 51px; width: 80px;">${rating}/10</div>
+                    
+                    <div class="app-absolute li-chapters-badge-bg" style="left: 180px; top: 48px;"></div>
+                    <div class="app-absolute flex-center-col li-badge-text" style="left: 183px; top: 51px; width: auto; padding: 0 5px;">${chapters} Ch.</div>
+                    
+                    <div class="app-absolute li-arrow-icon-wrapper" style="right: 15px; top: 24px;">
+                        <img src="Resources/Svgs/item-list-arrow.svg" alt="Arrow icon" width="23" height="32"/>
+                    </div>
+                `;
+                // Note: If 'Resources/Svgs/item-list-arrow.svg' is not available, replace or remove this arrow.
+                // For simplicity, I'm keeping the arrow SVG as an img, assuming it's a UI element not a background.
+
+                scrollableListContent.appendChild(listItemWrapper);
+            });
+        }
+
+        function displayFeaturedManga(manga) {
+            if (!manga) return;
+
+            const title = manga.title.english || manga.title.romaji || 'N/A';
+            const coverImage = manga.image || 'https://placehold.co/126x193/333333/FFFFFF?text=N/A&font=montserrat';
+            const type = manga.type || 'MANGA';
+            const year = manga.releaseDate || 'N/A';
+            
+            featuredPoster.src = coverImage;
+            featuredPoster.alt = `${title} Poster`;
+            featuredInfo.textContent = `${type} | ${year}`;
+            featuredTitle.textContent = title;
+        }
+
+        fetchManga();
+    });
+</script>
+</body>
+</html>

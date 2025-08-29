@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hub</title>
+    <!-- ADD THIS LINE: Font Awesome CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <style>
+      :root {
+        --accent-color: #ff9500;
+        --background-color: #101010;
+        --card-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --disabled-color: #505050;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        flex-direction: column;
+      }
+
+      .hub-container {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+      }
+
+      .hub-card {
+        width: 140px;
+        height: 140px;
+        background-color: var(--card-color);
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-color);
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+      }
+
+      a.hub-card {
+        cursor: pointer;
+      }
+
+      a.hub-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 20px rgba(255, 149, 0, 0.4);
+      }
+
+      /* UPDATED ICON STYLE */
+      .hub-icon {
+        font-size: 48px; /* Control icon size with font-size */
+        margin-bottom: 15px;
+        color: var(--text-color);
+        transition: color 0.3s ease;
+      }
+
+      a.hub-card:hover .hub-icon {
+        color: var(--accent-color);
+      }
+
+      .hub-text {
+        font-size: 1.1em;
+        font-weight: 600;
+      }
+      .logo {
+        font-size: 3.8em;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .logo span {
+        color: var(--accent-color);
+      }
+      header {
+        z-index: 1000;
+        margin-bottom: 10px;
+      }
+
+      @media (max-width: 500px) {
+        .hub-container {
+          flex-direction: column;
+          align-items: center;
+        }
+        .hub-card {
+          margin: 10px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo" onclick="window.location.href='/'">
+        Sinimex<span>.</span>
+      </div>
+    </header>
+    <div class="hub-container">
+      <!-- Functional "Feed" Card -->
+      <a href="https://feeder-main.vercel.app/feed" class="hub-card">
+        <i class="fa-solid fa-circle-play hub-icon"></i>
+        <div class="hub-text">Feed</div>
+      </a>
+
+      <!-- UPDATED: Functional "XNXX" Card -->
+      <a href="https://feeder-main.vercel.app/watch" class="hub-card">
+        <i class="fa-solid fa-film hub-icon"></i>
+        <div class="hub-text">Watch</div>
+      </a>
+      <a href="/ext/nsfw/hentai" class="hub-card">
+        <i class="fa-solid fa-book hub-icon"></i>
+        <div class="hub-text">Read</div>
+      </a>
+    </div>
+  </body>
+</html>

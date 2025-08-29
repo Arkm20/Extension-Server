@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python",
+      "config": { 
+        "buildCommand": "python3 main.py",
+        "maxLambdaSize": "50mb",
+        "includeFiles": [
+          "animex/**", 
+          "data/**", 
+          "modules/**",
+          "modules/9anime.module",
+          "extensions/**", 
+          "templates/**"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ]
+}

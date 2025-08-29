@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Downloader</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #333; }
+        .controls { margin: 1rem 0; }
+        select, input, button { padding: 0.5rem; font-size: 1rem; border-radius: 4px; border: 1px solid #ccc; margin: 0.25rem; }
+        button { background-color: #007bff; color: white; border-color: #007bff; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #status { margin-top: 1rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Anime Episode Downloader</h1>
+        <p>Example: Frieren: Beyond Journey's End (ID: 52991), Episode 5</p>
+        
+        <div class="controls">
+            <label for="quality-select">Quality:</label>
+            <select id="quality-select">
+                <option value="360p">360p</option>
+                <option value="720p">720p</option>
+                <option value="1080p" selected>1080p</option>
+            </select>
+            
+            <button id="download-sub-btn">Download Sub</button>
+            <button id="download-dub-btn">Download Dub</button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // --- JavaScript to call our FastAPI backend ---
+
+        const jikanId = '52299'; // Frieren: Beyond Journey's End
+        const episode = 1;
+
+        const qualitySelect = document.getElementById('quality-select');
+        const downloadSubBtn = document.getElementById('download-sub-btn');
+        const downloadDubBtn = document.getElementById('download-dub-btn');
+        const statusDiv = document.getElementById('status');
+        
+        // A function to handle the download logic
+        async function handleDownload(isDub) {
+            const quality = qualitySelect.value;
+            const subOrDub = isDub ? 'Dub' : 'Sub';
+
+            statusDiv.textContent = `Fetching ${quality} ${subOrDub} link... Please wait. This can take a moment.`;
+            statusDiv.style.color = 'orange';
+
+            // Construct the API URL for our backend
+            const apiUrl = `https://animex-player.vercel.app/download-link?jikan_id=${jikanId}&episode=${episode}&dub=${isDub}&quality=${quality}`;
+
+            try {
+                const response = await fetch(apiUrl);
+
+                // Handle errors from our API (e.g., 404 Not Found)
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `API Error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const finalUrl = data.download_url;
+                
+                statusDiv.textContent = 'Success! Starting download...';
+                statusDiv.style.color = 'green';
+
+                // --- This is the key part for triggering the download ---
+                // Create a temporary anchor element
+                const a = document.createElement('a');
+                a.href = finalUrl;
+                
+                // The 'download' attribute suggests a filename to the browser
+                a.download = `anime-${jikanId}-ep${episode}-${subOrDub}-${quality}.mp4`; 
+                
+                // Append to the body, click, and then remove it
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                // --------------------------------------------------------
+
+            } catch (error) {
+                console.error('Download failed:', error);
+                statusDiv.textContent = `Error: ${error.message}`;
+                statusDiv.style.color = 'red';
+            }
+        }
+
+        // Add event listeners to buttons
+        downloadSubBtn.addEventListener('click', () => handleDownload(false));
+        downloadDubBtn.addEventListener('click', () => handleDownload(true));
+
+    </script>
+
+</body>
+</html>
